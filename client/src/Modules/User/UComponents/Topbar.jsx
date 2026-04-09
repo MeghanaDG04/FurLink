@@ -167,7 +167,7 @@ const Topbar = () => {
             </Box>
 
             {/* Search bar */}
-            <Box
+            {/* <Box
               className="topbar-search"
               sx={{
                 position: "relative",
@@ -188,7 +188,7 @@ const Topbar = () => {
                 placeholder="Search pets, products..."
                 sx={{ pl: 5, pr: 2, py: 0.5, width: "100%", fontSize: "0.875rem" }}
               />
-            </Box>
+            </Box> */}
 
             {/* Desktop nav */}
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, gap: 0.5, ml: 1 }}>
