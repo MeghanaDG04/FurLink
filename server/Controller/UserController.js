@@ -124,5 +124,35 @@ const updateprofile = async(req,res)=>{
         res.status(500).json({message: "Server error"})
     }
 }
+
+const verifyEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await usertable.findOne({ email: email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No account found with this email address" });
+        }
+        res.json({ success: true, message: "Email verified", userId: user._id });
+    } catch (error) {
+        console.log("VERIFY EMAIL ERROR:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { userId, newPassword } = req.body;
+        const user = await usertable.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        user.password = newPassword;
+        await user.save();
+        res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+        console.log("RESET PASSWORD ERROR:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
     
-module.exports = { registerUser, loginUser ,getUsers, getUserById, deleteUser, updateUser, getProfile, updateprofile }
+module.exports = { registerUser, loginUser ,getUsers, getUserById, deleteUser, updateUser, getProfile, updateprofile, verifyEmail, resetPassword }

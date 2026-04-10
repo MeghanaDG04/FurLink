@@ -575,6 +575,7 @@ export default function Login() {
               variant="body2"
               sx={{ color: "#FF9A56", cursor: "pointer", fontWeight: 600 }}
               className="forgot-link"
+              onClick={() => (window.location.href = "/forgotpassword")}
             >
               Forgot Password?
             </Typography>

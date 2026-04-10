@@ -1336,25 +1336,6 @@ export default function HomePage() {
               ))}
             </Grid>
 
-            <Grid item xs={6} md={2}>
-              <Typography fontWeight={700} sx={{ mb: 2 }}>
-                Categories
-              </Typography>
-              {categories.slice(0, 4).map((cat) => (
-                <Box
-                  key={cat._id}
-                  sx={{
-                    py: 0.5,
-                    cursor: "pointer",
-                    color: "rgba(255,255,255,0.7)",
-                    "&:hover": { color: "#fff" },
-                  }}
-                >
-                  {cat.category}
-                </Box>
-              ))}
-            </Grid>
-
             <Grid item xs={12} md={4}>
               <Typography fontWeight={700} sx={{ mb: 2 }}>
                 Contact Us

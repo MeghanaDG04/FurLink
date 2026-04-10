@@ -1,5 +1,5 @@
 const express = require('express')
-const {registerUser, loginUser, getUsers, getUserById, deleteUser, updateUser, getProfile, updateprofile } = require('../Controller/UserController')
+const {registerUser, loginUser, getUsers, getUserById, deleteUser, updateUser, getProfile, updateprofile, verifyEmail, resetPassword } = require('../Controller/UserController')
 const auth = require('../Middleware/Auth')
 
 const route = express.Router()
@@ -14,5 +14,7 @@ route.put('/updateuser/:id', updateUser)
 route.get('/getprofile', auth, getProfile)
 route.put('/updateprofile', auth, updateprofile)
 
+route.post('/verifyemail', verifyEmail)
+route.post('/resetpassword', resetPassword)
 
 module.exports = route
