@@ -432,7 +432,7 @@ export default function ForgotPassword() {
                     <Cancel sx={{ color: "#FF6B6B", fontSize: 16, mr: 0.5 }} />
                   )}
                   <Typography variant="caption" color={passwordValidation.length ? "#4CAF50" : "#666"}>
-                    At least 6 characters
+                    At least 8 characters
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>

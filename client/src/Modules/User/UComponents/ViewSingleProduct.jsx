@@ -569,6 +569,10 @@ export default function ViewSingleProduct() {
                     bgcolor: "#f5f7ff"
                   }
                 }}
+                onClick={() => {
+                localStorage.setItem("selectedProduct", JSON.stringify(product));
+                navigate('/bookingform');
+              }}
               >
                 Buy Now
               </Button>

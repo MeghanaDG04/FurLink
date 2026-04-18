@@ -25,6 +25,7 @@ const menuItems = [
   { text: 'Products', icon: <InventoryIcon />, path: '/admin/products' },
   { text: 'Payments', icon: <PaymentIcon />, path: '/admin/payments' },
   { text: 'Feedback', icon: <FeedbackIcon />, path: '/admin/feedback' },
+  { text: 'Booking', icon: <InventoryIcon />, path: '/admin/booking' }
 ]
 
 const categoryItems = [
