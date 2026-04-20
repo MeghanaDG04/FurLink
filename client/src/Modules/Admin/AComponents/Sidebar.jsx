@@ -23,7 +23,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
   { text: 'Products', icon: <InventoryIcon />, path: '/admin/products' },
-  { text: 'Payments', icon: <PaymentIcon />, path: '/admin/payments' },
+  { text: 'Payments', icon: <PaymentIcon />, path: '/admin/managepayments' },
   { text: 'Feedback', icon: <FeedbackIcon />, path: '/admin/feedback' },
   { text: 'Booking', icon: <InventoryIcon />, path: '/admin/booking' }
 ]

@@ -243,13 +243,13 @@ const Topbar = () => {
                 </Button>
               </Tooltip> */}
 
-              <Tooltip title="Wishlist">
+              <Tooltip title="Wishlist" onClick={()=> navigate("/wishlist")}>
                 <IconButton sx={{ color: "rgba(0,0,0,0.6)" }}>
                   <FavoriteIcon />
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Cart">
+              <Tooltip title="Cart" onClick={()=> navigate("/cart")}>
                 <IconButton sx={{ color: "rgba(0,0,0,0.6)" }}>
                   <Badge badgeContent={0} color="error">
                     <ShoppingCartIcon />

@@ -469,7 +469,7 @@ export default function ViewSingleProduct() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 1.5, bgcolor: "#fff7ed", borderRadius: 2 }}>
                 <ReplayIcon sx={{ color: "#f97316" }} />
                 <Typography variant="body2" fontWeight={500}>
-                  30-day return policy
+                  7-day return policy
                 </Typography>
               </Box>
             </Box>

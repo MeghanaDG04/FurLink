@@ -10,6 +10,10 @@ import ViewSingleProduct from '../UComponents/ViewSingleProduct'
 import MyProfile from '../UComponents/MyProfile'
 import ForgotPassword from '../UComponents/ForgotPassword'
 import BookingForm from '../UComponents/BookingForm'
+import Payment from '../UComponents/Payment'
+import Orders from '../UComponents/Orders'
+import Cart from '../UComponents/Cart'
+import WishList from '../UComponents/WishList'
 
 
 
@@ -29,6 +33,10 @@ function AppContent(){
           <Route path='/myprofile' element={<MyProfile/>}/>
           <Route path='/forgotpassword'element={<ForgotPassword/>}/>
           <Route path='/bookingform' element={<BookingForm/>}/>
+          <Route path ='/payment' element={<Payment/>}/>
+          <Route path ='/orders' element={<Orders/>}/>
+          <Route path ='/cart' element={<Cart/>}/>
+          <Route path ='/wishlist' element={<WishList/>}/>
       </Routes>
     </div>
   )

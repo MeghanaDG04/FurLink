@@ -9,7 +9,7 @@ import Manageuser from '../AComponents/Manageuser'
 import AddCategory from '../AComponents/AddCategory'
 import ViewCategory from '../AComponents/ViewCategory'
 import ManageProduct from '../AComponents/ManageProduct'
-import Payment from '../AComponents/Payment'
+import ManagePayment from '../AComponents/ManagePayment'
 import Feedback from '../AComponents/Feedback'
 import ViewUser from '../AComponents/ViewUser'
 import UpdateUser from '../AComponents/UpdateUser'
@@ -61,7 +61,7 @@ function AdminLayout() {
           <Route path='/category/add' element={<AddCategory />} />
           <Route path='/category/view' element={<ViewCategory />} />
           <Route path='/products' element={<ManageProduct />} />
-          <Route path='/payments' element={<Payment />} />
+          <Route path='/managepayments' element={<ManagePayment />} />
           <Route path='/feedback' element={<Feedback />} />
           <Route path='/viewuser' element={<ViewUser />} />
           <Route path='/updateuser/:id' element={<UpdateUser />} />

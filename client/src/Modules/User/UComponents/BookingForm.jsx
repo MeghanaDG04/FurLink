@@ -176,11 +176,19 @@ export default function BookingForm() {
 
       console.log("Booking response:", res.data);
       setSuccessMsg("Booking placed successfully!");
+      
+      const bookingInfo = {
+        bookingId: res.data.booking?._id || res.data.booking?.booking?._id,
+        totalamount: calculateTotal(),
+        quantity: formdata.quantity,
+        productName: product?.name || 'Product'
+      };
+      localStorage.setItem('pendingBooking', JSON.stringify(bookingInfo));
       localStorage.removeItem("selectedProduct");
       
       setTimeout(() => {
-        navigate("/homepage");
-      }, 2000);
+        navigate("/payment");
+      }, 1500);
     } catch (err) {
       console.log("Booking error:", err);
       const message = err.response?.data?.message || "";

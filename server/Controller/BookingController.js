@@ -69,4 +69,18 @@ const updateBooking = async(req, res)=>{
     }
 }
 
-module.exports = { createBooking, getbooking, getBookingById, deleteBooking, updateBooking }
+const getUserBookings = async (req, res) => {
+    try {
+        const userId = req.userid;
+        const bookings = await BookingTable.find({ userId: userId })
+            .populate('productID')
+            .sort({ bookingDate: -1 });
+        
+        res.status(200).json({ message: "User bookings fetched successfully", bookings: bookings });
+    } catch (error) {
+        console.error("Error fetching user bookings:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+}
+
+module.exports = { createBooking, getbooking, getBookingById, deleteBooking, updateBooking, getUserBookings }

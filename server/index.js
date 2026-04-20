@@ -40,5 +40,6 @@ app.use('/admin', require('./Routes/AdminRoutes'))
 app.use('/product', require('./Routes/ProductRoutes'))
 app.use('/category',require('./Routes/CategoryRoutes'))
 app.use('/booking', require('./Routes/BookingRoutes'))
+app.use('/payment', require('./Routes/PaymentRoutes'))
 
 app.use('/image', express.static("./Uploads"))
