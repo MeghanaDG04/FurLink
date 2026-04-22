@@ -23,7 +23,7 @@ function AdminLayout() {
   if (!admin) return <Navigate to='/admin/login' replace />
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f0f2f5' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f7fa' }}>
       <Sidebar />
 
       <AppBar
@@ -32,22 +32,24 @@ function AdminLayout() {
         sx={{
           width: `calc(100% - ${drawerWidth}px)`,
           ml: `${drawerWidth}px`,
-          background: 'rgba(255,255,255,0.8)',
+          background: 'rgba(255,255,255,0.95)',
           backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(0,0,0,0.08)',
+          borderBottom: '1px solid rgba(124,185,232,0.15)',
+          boxShadow: '0 2px 20px rgba(124,185,232,0.1)',
         }}
       >
         <Toolbar sx={{ justifyContent: 'flex-end' }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mr: 2, fontWeight: 500 }}>
             {admin.email}
           </Typography>
 
           <Avatar sx={{
             width: 36,
             height: 36,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #7CB9E8 0%, #A8D8EA 100%)',
+            boxShadow: '0 2px 8px rgba(124,185,232,0.3)',
           }}>
-            <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />
+            <AdminPanelSettingsIcon sx={{ fontSize: 20, color: '#fff' }} />
           </Avatar>
         </Toolbar>
       </AppBar>

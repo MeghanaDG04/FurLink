@@ -104,7 +104,7 @@ export default function BookingForm() {
       setValidFields((prev) => ({ ...prev, phone: validatePhone(value) }));
     }
     if (name === "address") {
-      setValidFields((prev) => ({ ...prev, address: value.trim().length >= 10 }));
+      setValidFields((prev) => ({ ...prev, address: value.trim().length >= 5}));
     }
     if (name === "productID") {
       setValidFields((prev) => ({ ...prev, productID: value.trim().length > 0 }));
@@ -141,7 +141,7 @@ export default function BookingForm() {
     if (!validateEmail(formdata.email)) errors.push("Valid email");
     if (!validatePhone(formdata.phone)) errors.push("Valid 10-digit phone");
     if (!formdata.address.trim() || formdata.address.trim().length < 5)
-      errors.push("Complete address (at least 10 characters)");
+      errors.push("Complete address (at least 5 characters)");
     if (!formdata.productID) errors.push("Product ID");
     if (formdata.quantity < 1) errors.push("Quantity (minimum 1)");
 

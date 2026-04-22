@@ -18,6 +18,7 @@ import {
   Button,
   Select,
   MenuItem,
+  Chip,
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -115,6 +116,7 @@ export default function ManageBooking() {
                 <TableCell sx={{ color: "#fff" }}>Total</TableCell>
                 <TableCell sx={{ color: "#fff" }}>Date</TableCell>
                 <TableCell sx={{ color: "#fff" }}>Status</TableCell>
+                <TableCell sx={{ color: "#fff" }}>Payment</TableCell>
                 <TableCell sx={{ color: "#fff" }} align="center">
                   Action
                 </TableCell>
@@ -136,7 +138,7 @@ export default function ManageBooking() {
 
                     <TableCell>{b.email}</TableCell>
                     <TableCell>{b.phone}</TableCell>
-                    <TableCell>{b.productID?.productname || "N/A"}</TableCell>
+                    <TableCell>{b.productID?.name || "N/A"}</TableCell>
                     <TableCell>{b.quantity}</TableCell>
                     <TableCell>₹{b.totalamount}</TableCell>
                     <TableCell>
@@ -150,14 +152,37 @@ export default function ManageBooking() {
                       <Select
                         size="small"
                         value={b.bookingstatus}
+                        disabled={b.bookingstatus === "Confirmed"}
                         onChange={(e) =>
                           handleStatusChange(b._id, e.target.value)
                         }
+                        sx={{
+                          bgcolor: b.bookingstatus === "Confirmed" ? "rgba(0,0,0,0.05)" : "transparent",
+                          "& .MuiSelect-select": {
+                            display: "flex",
+                            alignItems: "center",
+                          }
+                        }}
                       >
                         <MenuItem value="Pending">Pending</MenuItem>
                         <MenuItem value="Confirmed">Confirmed</MenuItem>
                         <MenuItem value="Cancelled">Cancelled</MenuItem>
                       </Select>
+                    </TableCell>
+
+                    {/* PAYMENT STATUS */}
+                    <TableCell>
+                      <Chip
+                        label={b.paymentstatus || 'Pending'}
+                        size="small"
+                        color={
+                          b.paymentstatus === 'Paid' ? 'success' :
+                          b.paymentstatus === 'Refunded' ? 'info' :
+                          b.paymentstatus === 'Failed' ? 'error' :
+                          'default'
+                        }
+                        sx={{ fontWeight: 600 }}
+                      />
                     </TableCell>
 
                     <TableCell align="center">
@@ -229,6 +254,7 @@ export default function ManageBooking() {
 
           <Select
             value={editBooking.bookingstatus}
+            disabled={editBooking.bookingstatus === "Confirmed"}
             onChange={(e) =>
               setEditBooking({
                 ...editBooking,

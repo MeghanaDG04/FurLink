@@ -138,9 +138,17 @@ const getPaymentHistory = async (req, res) => {
 const getAllPayments = async (req, res) => {
     try {
         const payments = await PaymentTable.find()
-            .populate('bookingId')
+            .populate({
+                path: 'bookingId',
+                populate: { path: 'productID' }
+            })
             .populate('userId', 'fullname email')
             .sort({ paymentDate: -1 });
+
+        console.log('=== All payments fetched:', payments.length);
+        payments.forEach(p => {
+            console.log('Payment:', p._id, 'Status:', p.paymentstatus, 'Method:', p.paymentMethod, 'BookingId:', p.bookingId);
+        });
 
         res.status(200).json({
             message: "All payments fetched successfully",
@@ -152,9 +160,42 @@ const getAllPayments = async (req, res) => {
     }
 };
 
+const updatePaymentStatus = async (bookingId, status) => {
+    const mongoose = require('mongoose');
+    try {
+        console.log('Attempting to update payment for bookingId:', bookingId, 'to status:', status);
+        
+        // Try with string or ObjectId
+        let query = { bookingId: bookingId };
+        let payment = await PaymentTable.findOne(query);
+        
+        if (!payment && mongoose.Types.ObjectId.isValid(bookingId)) {
+            query = { bookingId: new mongoose.Types.Types.ObjectId(bookingId) };
+            payment = await PaymentTable.findOne(query);
+        }
+        
+        console.log('Found payment record:', payment ? payment._id : 'NOT FOUND');
+        console.log('Query used:', query);
+        
+        if (payment) {
+            await PaymentTable.findOneAndUpdate(
+                query,
+                { paymentstatus: status },
+                { new: true }
+            );
+            console.log('Payment updated to:', status);
+        } else {
+            console.log('No payment record exists for this booking');
+        }
+    } catch (error) {
+        console.log("Error updating payment status:", error);
+    }
+};
+
 module.exports = { 
     processPayment, 
     getPaymentDetails, 
     getPaymentHistory,
-    getAllPayments 
+    getAllPayments,
+    updatePaymentStatus 
 };

@@ -50,7 +50,7 @@ const Topbar = () => {
   const settings = token ? [
     { name: "Profile", path: "/myprofile", icon: <PersonIcon /> },
     { name: "Orders", path: "/orders", icon: <ShoppingCartIcon /> },
-    { name: "Wishlist", path: "/wishlist", icon: <FavoriteIcon /> },
+    //{ name: "Wishlist", path: "/wishlist", icon: <FavoriteIcon /> },
     { name: "Logout", path: "/login", icon: <LogoutIcon />, action: "logout" },
   ] : [
     { name: "Login", path: "/login", icon: <PersonIcon /> },

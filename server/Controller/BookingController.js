@@ -1,9 +1,23 @@
 const BookingTable = require('../Models/BookingModel');
+const Product = require('../Models/ProductModel');
+const { updatePaymentStatus } = require('./PaymentController');
 
 const createBooking = async (req, res) => {
     try {
         const { fullname, email, phone, address, quantity, productID, totalamount } = req.body;
         const uid = req.userid; 
+
+        const product = await Product.findById(productID);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        if (product.quantity < quantity) {
+            return res.status(400).json({ message: "Insufficient stock" });
+        }
+
+        product.quantity -= quantity;
+        await product.save();
 
         const newBooking = new BookingTable({
             fullname,
@@ -59,8 +73,38 @@ const deleteBooking = async(req, res)=>{
 const updateBooking = async(req, res)=>{
     try{
         const {id} = req.params
-        const body = req.body
-        const updatedBooking = await BookingTable.findByIdAndUpdate(id,req.body, {new:true})
+        const { bookingstatus } = req.body
+        
+        const existingBooking = await BookingTable.findById(id);
+        if (!existingBooking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        const updateData = { ...req.body };
+
+        if (existingBooking.bookingstatus !== 'Cancelled' && bookingstatus === 'Cancelled') {
+            const product = await Product.findById(existingBooking.productID);
+            if (product) {
+                product.quantity += existingBooking.quantity;
+                await product.save();
+            }
+
+            // Refund if paid via UPI/Card (not COD) and payment was made
+            const paymentMethod = existingBooking.paymentmethod;
+            const paymentStatus = existingBooking.paymentstatus;
+            
+            if (paymentMethod && paymentMethod !== 'COD' && (paymentStatus === 'Paid' || paymentStatus === 'Pending')) {
+                updateData.paymentstatus = 'Refunded';
+                console.log('Processing refund for booking:', existingBooking._id, 'Method:', paymentMethod, 'Status:', paymentStatus);
+                try {
+                    await updatePaymentStatus(existingBooking._id, 'Refunded');
+                } catch (refundError) {
+                    console.log('Error in refund:', refundError);
+                }
+            }
+        }
+
+        const updatedBooking = await BookingTable.findByIdAndUpdate(id, updateData, {new:true})
         console.log(updatedBooking)
         res.status(201).json({message:"Booking Updates Successfully", bookingupdate : updatedBooking})
     }catch(error){

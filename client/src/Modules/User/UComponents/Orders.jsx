@@ -94,6 +94,8 @@ export default function Orders() {
         return 'warning';
       case 'Failed':
         return 'error';
+      case 'Refunded':
+        return 'info';
       default:
         return 'default';
     }
@@ -107,6 +109,32 @@ export default function Orders() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    const token = localStorage.getItem('Token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const confirm = window.confirm('Are you sure you want to cancel this booking?');
+    if (!confirm) return;
+
+    try {
+      const res = await axios.put(
+        `http://localhost:7000/booking/updatebooking/${bookingId}`,
+        { bookingstatus: 'Cancelled' },
+        { headers: { 'auth-token': token } }
+      );
+      if (res.data) {
+        alert('Booking cancelled successfully');
+        fetchOrders();
+      }
+    } catch (err) {
+      console.log('Error cancelling booking:', err);
+      alert('Failed to cancel booking');
+    }
   };
 
   if (loading) {
@@ -175,15 +203,23 @@ export default function Orders() {
                 overflow: 'hidden',
                 transition: 'all 0.3s ease',
                 cursor: 'pointer',
-                '&:hover': { boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }
+                '&:hover': { boxShadow: '0 4px 20px rgba(0, 0, 0, 0.12)' }
               }}
               className="order-card"
               onClick={() => setSelectedOrder(selectedOrder === order._id ? null : order._id)}
             >
               <Box sx={{ p: 2, bgcolor: selectedOrder === order._id ? '#fff8f0' : '#f8f9fa', display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ bgcolor: selectedOrder === order._id ? '#FF9A56' : '#ddd', width: 50, height: 50 }}>
-                  <ShoppingBagIcon />
-                </Avatar>
+                {order.productID?.image ? (
+                  <Box
+                    component="img"
+                    src={`http://localhost:7000/uploads/${order.productID.image}`}
+                    sx={{ width: 50, height: 50, borderRadius: 1, objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Avatar sx={{ bgcolor: selectedOrder === order._id ? '#FF9A56' : '#ddd', width: 50, height: 50 }}>
+                    <ShoppingBagIcon />
+                  </Avatar>
+                )}
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="subtitle1" fontWeight={600}>
                     {order.productID?.name || 'Product'}
@@ -214,7 +250,16 @@ export default function Orders() {
                   <Divider sx={{ mb: 2 }} />
                   
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={4}>
+                      {order.productID?.image && (
+                        <Box
+                          component="img"
+                          src={`http://localhost:7000/uploads/${order.productID.image}`}
+                          sx={{ width: '100%', borderRadius: 2, objectFit: 'cover' }}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} md={8}>
                       <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <ReceiptIcon sx={{ color: '#FF9A56' }} /> Order Details
                       </Typography>
@@ -274,11 +319,19 @@ export default function Orders() {
                                 <Chip 
                                   label={order.paymentstatus || 'Pending'} 
                                   size="small" 
-                                  color={getPaymentStatusColor(order.paymentstatus)}
+                                  color={order.paymentstatus === 'Refunded' ? 'info' : getPaymentStatusColor(order.paymentstatus)}
                                   sx={{ fontWeight: 600 }}
                                 />
                               </TableCell>
                             </TableRow>
+                            {order.bookingstatus === 'Cancelled' && order.paymentmethod !== 'COD' && order.paymentstatus === 'Refunded' && (
+                              <TableRow>
+                                <TableCell sx={{ border: 0, py: 0.5, pl: 0, color: '#666' }}>Refund Status</TableCell>
+                                <TableCell sx={{ border: 0, py: 0.5, pr: 0, textAlign: 'right', color: '#2196f3', fontWeight: 600 }}>
+                                  Money will be refunded within 3-5 business days
+                                </TableCell>
+                              </TableRow>
+                            )}
                             <TableRow>
                               <TableCell sx={{ border: 0, py: 0.5, pl: 0, color: '#666' }}>Payment Method</TableCell>
                               <TableCell sx={{ border: 0, py: 0.5, pr: 0, textAlign: 'right', fontWeight: 600 }}>
@@ -322,6 +375,26 @@ export default function Orders() {
                   </Grid>
 
                   <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                    {order.bookingstatus !== 'Cancelled' && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelBooking(order._id);
+                        }}
+                        disabled={order.bookingstatus === 'Cancelled'}
+                        sx={{
+                          borderColor: '#f44336',
+                          color: '#f44336',
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          '&:hover': { borderColor: '#d32f2f', bgcolor: 'rgba(244, 67, 54, 0.05)' }
+                        }}
+                      >
+                        Cancel Booking
+                      </Button>
+                    )}
                     <Button
                       variant="outlined"
                       onClick={(e) => {

@@ -503,7 +503,7 @@ export default function ViewSingleProduct() {
               <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #ddd", borderRadius: 2 }}>
                 <IconButton
                   onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
+                  disabled={quantity <= 1 || product.quantity <= 0}
                   size="small"
                 >
                   <RemoveIcon />
@@ -517,6 +517,7 @@ export default function ViewSingleProduct() {
                     }
                   }}
                   size="small"
+                  disabled={product.quantity <= 0}
                   sx={{
                     width: 60,
                     "& .MuiInputBase-input": { textAlign: "center", p: 1 }
@@ -524,14 +525,17 @@ export default function ViewSingleProduct() {
                 />
                 <IconButton
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= (product?.quantity || 10)}
+                  disabled={quantity >= (product?.quantity || 10) || product.quantity <= 0}
                   size="small"
                 >
                   <AddIcon />
                 </IconButton>
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                {product.quantity > 0 ? `(${product.quantity} in stock)` : "(Out of stock)"}
+              <Typography variant="body2" sx={{ 
+                color: product.quantity <= 0 ? "#f44336" : "text.secondary",
+                fontWeight: product.quantity <= 0 ? 600 : 400
+              }}>
+                {product.quantity > 0 ? `(${product.quantity} in stock)` : "⚠ Out of Stock"}
               </Typography>
             </Box>
 
@@ -556,17 +560,18 @@ export default function ViewSingleProduct() {
               </Button>
               <Button
                 variant="outlined"
+                disabled={product.quantity <= 0}
                 sx={{
                   flex: 1,
                   py: 1.8,
                   borderRadius: 3,
                   fontWeight: 600,
                   textTransform: "none",
-                  borderColor: "#667eea",
-                  color: "#667eea",
+                  borderColor: product.quantity <= 0 ? "#ccc" : "#667eea",
+                  color: product.quantity <= 0 ? "#999" : "#667eea",
                   "&:hover": {
-                    borderColor: "#667eea",
-                    bgcolor: "#f5f7ff"
+                    borderColor: product.quantity <= 0 ? "#ccc" : "#667eea",
+                    bgcolor: product.quantity <= 0 ? "#f5f5f5" : "#f5f7ff"
                   }
                 }}
                 onClick={() => {
@@ -574,7 +579,7 @@ export default function ViewSingleProduct() {
                 navigate('/bookingform');
               }}
               >
-                Buy Now
+                {product.quantity <= 0 ? "Out of Stock" : "Buy Now"}
               </Button>
             </Box>
           </Grid>

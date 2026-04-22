@@ -406,7 +406,7 @@ export default function Payment() {
             <Button
               variant="outlined"
               fullWidth
-              onClick={() => navigate('/myorders')}
+              onClick={() => navigate('/orders')}
               sx={{
                 mt: 1,
                 py: 1.5,
