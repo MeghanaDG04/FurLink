@@ -1,29 +1,45 @@
 const jwt = require("jsonwebtoken");
+const Admin = require("../Models/AdminModel");
 
 const SECRET_KEY = "product-crud"
 
-const authuser = async(req, res, next) => {
+const verifyToken = async(req, res, next) => {
     try {
         const usertoken = req.header("auth-token")
-        const authHeader = req.header("Authorization")
-        console.log("Received token:", usertoken)
-        console.log("Authorization header:", authHeader)
-        console.log("All headers:", req.headers)
         if(!usertoken){
-            return res.json({success: false, message: "Unauthorized - No token provided"})
+            return res.status(401).json({success: false, message: "Unauthorized - No token provided"})
         }
         const trimmedToken = usertoken.trim()
         if(!trimmedToken){
-            return res.json({success: false, message: "Unauthorized - Token is empty"})
+            return res.status(401).json({success: false, message: "Unauthorized - Token is empty"})
         }
         const userinfo = jwt.verify(trimmedToken, SECRET_KEY)
-        console.log("Decoded user info:", userinfo)
         req.userid = userinfo.id
         next()
     } catch (error) {
         console.log("Auth error:", error.message)
-        res.json({success: false, message: "Server error - Invalid token"})  
+        res.status(401).json({success: false, message: "Unauthorized - Invalid token"})  
     }
 }
 
-module.exports = authuser
+const isAdmin = async(req, res, next) => {
+    try {
+        if (!req.userid) {
+            return res.status(403).json({ success: false, message: "Access denied - Admin rights required" })
+        }
+        // Check if userid corresponds to an admin
+        const admin = await Admin.findById(req.userid);
+        if (!admin) {
+            return res.status(403).json({ success: false, message: "Access denied - Not an admin" })
+        }
+        next()
+    } catch (error) {
+        console.error("IsAdmin error:", error);
+        res.status(500).json({ success: false, message: error.message })
+    }
+}
+
+module.exports = {
+    verifyToken,
+    isAdmin
+}

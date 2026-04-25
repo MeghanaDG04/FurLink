@@ -14,15 +14,22 @@ import Payment from '../UComponents/Payment'
 import Orders from '../UComponents/Orders'
 import Cart from '../UComponents/Cart'
 import WishList from '../UComponents/WishList'
-
+import Adopt from '../UComponents/Adopt'
+import AdoptionLayout from '../UComponents/AdoptionLayout'
+import PetListing from '../UComponents/PetListing'
+import PetDetail from '../UComponents/PetDetail'
+import MyAdoptions from '../UComponents/MyAdoptions'
+import AdoptionAbout from '../UComponents/AdoptionAbout'
 
 
 function AppContent(){
   const location = useLocation()
   const hideTopBar = ["/login", "/register","/forgotpassword"]
+  const isAdoptionRoute = location.pathname.startsWith("/adopt")
+  
   return (
     <div>
-      {!hideTopBar.includes(location.pathname) && <Topbar/>}
+      {!hideTopBar.includes(location.pathname) && !isAdoptionRoute && <Topbar/>}
       <Routes>
           {/* <Route path='/uhome' element={<UHome/>} /> */}
           <Route path='/about' element={<AboutPage/>} />
@@ -37,6 +44,15 @@ function AppContent(){
           <Route path ='/orders' element={<Orders/>}/>
           <Route path ='/cart' element={<Cart/>}/>
           <Route path ='/wishlist' element={<WishList/>}/>
+          
+          {/* Adoption Section with separate layout */}
+          <Route path='/adopt' element={<AdoptionLayout/>}>
+            <Route index element={<PetListing/>} />
+            <Route path='browse' element={<PetListing/>} />
+            <Route path='pet/:id' element={<PetDetail/>} />
+            <Route path='my-adoptions' element={<MyAdoptions/>} />
+            <Route path='about' element={<AdoptionAbout/>} />
+          </Route>
       </Routes>
     </div>
   )

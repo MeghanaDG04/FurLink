@@ -1,6 +1,8 @@
 const express = require('express')
 const dbconnection = require('./db')
 const cors = require('cors')
+const upload = require('./Middleware/ImageUpload')
+const { verifyToken, isAdmin } = require('./Middleware/Auth')
 
 //express is a web framework which is responsible for handle incoming request and response.
 
@@ -41,5 +43,16 @@ app.use('/product', require('./Routes/ProductRoutes'))
 app.use('/category',require('./Routes/CategoryRoutes'))
 app.use('/booking', require('./Routes/BookingRoutes'))
 app.use('/payment', require('./Routes/PaymentRoutes'))
+app.use('/adopt', require('./Routes/AdoptRoutes'))
+app.use('/pet', require('./Routes/PetRoutes'))
+
+app.post('/image/upload', verifyToken, isAdmin, upload.single('petimage'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  // Return the URL path that can be stored in DB
+  const imageUrl = `/image/${req.file.filename}`;
+  res.json({ filename: req.file.filename, url: imageUrl });
+});
 
 app.use('/image', express.static("./Uploads"))

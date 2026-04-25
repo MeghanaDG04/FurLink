@@ -1,6 +1,8 @@
 const Admin = require("../Models/AdminModel");
 const jwt = require("jsonwebtoken");
 
+const SECRET_KEY = "product-crud";
+
 // Create Admin (POST)
 const createAdmin = async (req, res) => {
   try {
@@ -44,7 +46,7 @@ const adminLogin = async (req, res) => {
 
     const token = jwt.sign(
       { id: admin._id },
-      "secretkey",
+      SECRET_KEY,
       { expiresIn: "1d" }
     );
 

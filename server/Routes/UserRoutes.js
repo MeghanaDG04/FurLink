@@ -1,6 +1,6 @@
 const express = require('express')
 const {registerUser, loginUser, getUsers, getUserById, deleteUser, updateUser, getProfile, updateprofile, verifyEmail, resetPassword } = require('../Controller/UserController')
-const auth = require('../Middleware/Auth')
+const { verifyToken } = require('../Middleware/Auth')
 
 const route = express.Router()
 
@@ -11,8 +11,8 @@ route.get('/getuserbyid/:id', getUserById)
 route.delete('/deleteuserbyid/:id', deleteUser)
 route.put('/updateuser/:id', updateUser)
 
-route.get('/getprofile', auth, getProfile)
-route.put('/updateprofile', auth, updateprofile)
+route.get('/getprofile', verifyToken, getProfile)
+route.put('/updateprofile', verifyToken, updateprofile)
 
 route.post('/verifyemail', verifyEmail)
 route.post('/resetpassword', resetPassword)

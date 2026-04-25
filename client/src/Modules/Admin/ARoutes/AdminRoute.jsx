@@ -14,6 +14,8 @@ import Feedback from '../AComponents/Feedback'
 import ViewUser from '../AComponents/ViewUser'
 import UpdateUser from '../AComponents/UpdateUser'
 import ManageBooking from '../AComponents/ManageBooking'
+import ManageAdopt from '../AComponents/ManageAdopt'
+import ManagePets from '../AComponents/ManagePets'
 
 const drawerWidth = 260
 
@@ -57,19 +59,21 @@ function AdminLayout() {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
 
-        <Routes>
-          <Route path='/dashboard' element={<AHome />} />
-          <Route path='/users' element={<Manageuser />} />
-          <Route path='/category/add' element={<AddCategory />} />
-          <Route path='/category/view' element={<ViewCategory />} />
-          <Route path='/products' element={<ManageProduct />} />
-          <Route path='/managepayments' element={<ManagePayment />} />
-          <Route path='/feedback' element={<Feedback />} />
-          <Route path='/viewuser' element={<ViewUser />} />
-          <Route path='/updateuser/:id' element={<UpdateUser />} />
-          <Route path='/' element={<Navigate to='/admin/dashboard' replace />} />
-          <Route path='/booking' element={<ManageBooking />} />
-        </Routes>
+         <Routes>
+            <Route path='/dashboard' element={<AHome />} />
+            <Route path='/users' element={<Manageuser />} />
+            <Route path='/category/add' element={<AddCategory />} />
+            <Route path='/category/view' element={<ViewCategory />} />
+            <Route path='/products' element={<ManageProduct />} />
+            <Route path='/managepayments' element={<ManagePayment />} />
+            <Route path='/feedback' element={<Feedback />} />
+            <Route path='/viewuser' element={<ViewUser />} />
+            <Route path='/updateuser/:id' element={<UpdateUser />} />
+            <Route path='/' element={<Navigate to='/admin/dashboard' replace />} />
+            <Route path='/booking' element={<ManageBooking />} />
+            <Route path='/adopt' element={<ManageAdopt />} />
+            <Route path='/pets' element={<ManagePets />} />
+          </Routes>
 
       </Box>
     </Box>

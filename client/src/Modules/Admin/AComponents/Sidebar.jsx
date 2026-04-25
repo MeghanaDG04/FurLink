@@ -16,6 +16,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import PaymentIcon from '@mui/icons-material/Payment'
 import FeedbackIcon from '@mui/icons-material/Feedback'
+import FavoriteIcon from '@mui/icons-material/Favorite'
 
 const drawerWidth = 260
 
@@ -25,7 +26,9 @@ const menuItems = [
   { text: 'Products', icon: <InventoryIcon />, path: '/admin/products' },
   { text: 'Payments', icon: <PaymentIcon />, path: '/admin/managepayments' },
   { text: 'Feedback', icon: <FeedbackIcon />, path: '/admin/feedback' },
-  { text: 'Booking', icon: <InventoryIcon />, path: '/admin/booking' }
+  { text: 'Booking', icon: <InventoryIcon />, path: '/admin/booking' },
+  {text: "Pets", icon: <Pets />, path: '/admin/pets'},
+  { text: 'Adopt', icon: <FavoriteIcon />, path: '/admin/adopt' }
 ]
 
 const categoryItems = [
