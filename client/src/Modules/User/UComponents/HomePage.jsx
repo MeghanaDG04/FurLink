@@ -24,6 +24,8 @@ import {
   Fade,
   Grow,
   Avatar,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -51,7 +53,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-import axios from "axios";
+import axiosInstance from "../../../utils/axiosConfig";
 
 const DEFAULT_IMAGE = "https://placehold.co/400x400/F1F5F9/2563EB?text=No+Image";
 
@@ -71,6 +73,9 @@ export default function HomePage() {
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [cartCount, setCartCount] = useState(0);
 
   const getActiveFilterCount = () => {
     let count = 0;
@@ -88,36 +93,105 @@ export default function HomePage() {
     fetchCategories();
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get("http://localhost:7000/product/getproducts");
-      setProducts(res.data.pdata || []);
-      setTimeout(() => setLoading(false), 800);
-    } catch (err) {
-      console.log(err);
-      setLoading(false);
-    }
-  };
+   const fetchProducts = async () => {
+     try {
+       setLoading(true);
+       const res = await axiosInstance.get("/product/getproducts");
+       setProducts(res.data.pdata || []);
+       setTimeout(() => setLoading(false), 800);
+     } catch (err) {
+       console.log(err);
+       setLoading(false);
+     }
+   };
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:7000/category/getCategory");
+      const res = await axiosInstance.get("/category/getCategory");
       setCategories(res.data.cdata || []);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const toggleFavorite = (productId) => {
-    setFavorites((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
-    );
+  const fetchWishlist = async () => {
+    try {
+      const res = await axiosInstance.get("/wishlist/");
+      const wishlistProducts = res.data.wishlist?.products?.map(p => p._id) || [];
+      const wishlistPets = res.data.wishlist?.pets?.map(p => p._id) || [];
+      setFavorites([...wishlistProducts, ...wishlistPets]);
+    } catch (err) {
+      console.log("No wishlist found:", err.message);
+    }
   };
 
-  const filteredProducts = products.filter((p) => {
+  const fetchCart = async () => {
+    try {
+      const res = await axiosInstance.get("/cart/");
+      const count = res.data.cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+      setCartCount(count);
+    } catch (err) {
+      console.log("No cart found:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+    fetchWishlist();
+    fetchCart();
+  }, []);
+
+  const toggleFavorite = async (productId) => {
+    const token = localStorage.getItem("Token");
+    if (!token) {
+      setSnackbar({ open: true, message: "Please login to add to wishlist", severity: "info" });
+      return;
+    }
+
+    const isFav = favorites.includes(productId);
+    setSnackbar({ open: true, message: isFav ? "Removed from wishlist" : "Added to wishlist", severity: "success" });
+
+    if (isFav) {
+      setFavorites(favorites.filter(id => id !== productId));
+      try {
+        await axiosInstance.delete("/wishlist/remove", {
+          data: { itemId: productId, type: "product" },
+        });
+      } catch (err) {
+        console.error("Error removing from wishlist:", err);
+      }
+    } else {
+      setFavorites([...favorites, productId]);
+      try {
+        await axiosInstance.post("/wishlist/product", { productId });
+      } catch (err) {
+        console.error("Error adding to wishlist:", err);
+        setFavorites(favorites.filter(id => id !== productId));
+      }
+    }
+  };
+
+  const addToCart = async (productId) => {
+    const token = localStorage.getItem("Token");
+    if (!token) {
+      setSnackbar({ open: true, message: "Please login to add to cart", severity: "info" });
+      return;
+    }
+
+    try {
+      await axiosInstance.post("/cart/product", { productId, quantity: 1 });
+      const res = await axiosInstance.get("/cart/");
+      const count = res.data.cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+      setCartCount(count);
+      setSnackbar({ open: true, message: "Added to cart", severity: "success" });
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      setSnackbar({ open: true, message: "Failed to add to cart", severity: "error" });
+    }
+   };
+
+   const filteredProducts = products.filter((p) => {
     const name = p?.name?.toLowerCase() || "";
     const catName = p?.category?.category?.toLowerCase() || "";
     const search = searchTerm.toLowerCase();
@@ -753,57 +827,83 @@ export default function HomePage() {
                   </Typography>
                 </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {/* Search */}
-                  <TextField
-                    size="small"
-                    placeholder="Search products..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: "#94A3B8" }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      width: { xs: "100%", sm: 200 },
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 3,
-                        "& fieldset": { borderColor: "#E2E8F0" },
-                        "&:hover fieldset": { borderColor: PRIMARY_COLOR },
-                        "&.Mui-focused fieldset": { borderColor: PRIMARY_COLOR },
-                      },
-                    }}
-                  />
+                 <Box
+                   sx={{
+                     display: "flex",
+                     alignItems: "center",
+                     gap: 2,
+                     flexWrap: "wrap",
+                   }}
+                 >
+                   {/* Search */}
+                   <TextField
+                     size="small"
+                     placeholder="Search products..."
+                     value={searchTerm}
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     InputProps={{
+                       startAdornment: (
+                         <InputAdornment position="start">
+                           <SearchIcon sx={{ color: "#94A3B8" }} />
+                         </InputAdornment>
+                       ),
+                     }}
+                     sx={{
+                       width: { xs: "100%", sm: 200 },
+                       "& .MuiOutlinedInput-root": {
+                         borderRadius: 3,
+                         "& fieldset": { borderColor: "#E2E8F0" },
+                         "&:hover fieldset": { borderColor: PRIMARY_COLOR },
+                         "&.Mui-focused fieldset": { borderColor: PRIMARY_COLOR },
+                       },
+                     }}
+                   />
 
-                  {/* Sort */}
-                  <FormControl size="small" sx={{ minWidth: 150 }}>
-                    <Select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      sx={{
-                        borderRadius: 3,
-                        "& fieldset": { borderColor: "#E2E8F0" },
-                        "&:hover fieldset": { borderColor: PRIMARY_COLOR },
-                        "&.Mui-focused fieldset": { borderColor: PRIMARY_COLOR },
-                      }}
-                    >
-                      <MenuItem value="featured">Featured</MenuItem>
-                      <MenuItem value="price-low">Price: Low to High</MenuItem>
-                      <MenuItem value="price-high">Price: High to Low</MenuItem>
-                      <MenuItem value="name">Name</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
+                   {/* Sort */}
+                   <FormControl size="small" sx={{ minWidth: 150 }}>
+                     <Select
+                       value={sortBy}
+                       onChange={(e) => setSortBy(e.target.value)}
+                       sx={{
+                         borderRadius: 3,
+                         "& fieldset": { borderColor: "#E2E8F0" },
+                         "&:hover fieldset": { borderColor: PRIMARY_COLOR },
+                         "&.Mui-focused fieldset": { borderColor: PRIMARY_COLOR },
+                       }}
+                     >
+                       <MenuItem value="featured">Featured</MenuItem>
+                       <MenuItem value="price-low">Price: Low to High</MenuItem>
+                       <MenuItem value="price-high">Price: High to Low</MenuItem>
+                       <MenuItem value="name">Name</MenuItem>
+                     </Select>
+                   </FormControl>
+
+                   {/* Cart Icon */}
+                   <IconButton
+                     onClick={() => navigate("/cart")}
+                     sx={{
+                       position: "relative",
+                       color: PRIMARY_COLOR,
+                       border: "1px solid #E2E8F0",
+                       "&:hover": { bgcolor: "#F1F5F9" },
+                     }}
+                   >
+                     <ShoppingCartIcon />
+                     {cartCount > 0 && (
+                       <Badge
+                         badgeContent={cartCount}
+                         color="error"
+                         sx={{
+                           "& .MuiBadge-badge": {
+                             fontSize: "0.7rem",
+                             minWidth: 20,
+                             height: 20,
+                           },
+                         }}
+                       />
+                     )}
+                   </IconButton>
+                 </Box>
               </Paper>
 
               {/* PRODUCT CARDS */}
@@ -1001,9 +1101,11 @@ export default function HomePage() {
                               fullWidth
                               variant="contained"
                               startIcon={<ShoppingCartIcon />}
-                              onClick={() =>
-                                navigate(`/viewsingleproduct/${product._id}`)
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(product._id);
+                              }}
+                              disabled={product.quantity === 0}
                               sx={{
                                 mt: 2,
                                 borderRadius: 3,
@@ -1357,26 +1459,43 @@ export default function HomePage() {
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <EmailIcon sx={{ mr: 1, color: "rgba(255,255,255,0.7)" }} />
                 <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
-                  support@furlink.com
+                  furlinksupport@gmail.com
                 </Typography>
               </Box>
             </Grid>
           </Grid>
 
-          <Box
-            sx={{
-              mt: 6,
-              pt: 3,
-              borderTop: "1px solid rgba(255,255,255,0.1)",
-              textAlign: "center",
-            }}
-          >
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.5)" }}>
-              © 2024 FurLink. All rights reserved.
-            </Typography>
-          </Box>
-        </Container>
-      </Box>
-    </Box>
-  );
-}
+           <Box
+             sx={{
+               mt: 6,
+               pt: 3,
+               borderTop: "1px solid rgba(255,255,255,0.1)",
+               textAlign: "center",
+             }}
+           >
+             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.5)" }}>
+               © 2026 FurLink. All rights reserved.
+             </Typography>
+           </Box>
+         </Container>
+       </Box>
+
+       {/* Notification Snackbar */}
+       <Snackbar
+         open={snackbar.open}
+         autoHideDuration={3000}
+         onClose={() => setSnackbar({ ...snackbar, open: false })}
+         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+       >
+         <Alert
+           onClose={() => setSnackbar({ ...snackbar, open: false })}
+           severity={snackbar.severity}
+           variant="filled"
+           sx={{ width: "100%" }}
+         >
+           {snackbar.message}
+         </Alert>
+       </Snackbar>
+     </Box>
+   );
+ }

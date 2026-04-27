@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../../utils/axiosConfig";
 import {
   Container,
   Grid,
@@ -24,7 +24,9 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Skeleton
+  Skeleton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -200,15 +202,26 @@ export default function ViewSingleProduct() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [reviewExpanded, setReviewExpanded] = useState(false);
+   const [isWishlisted, setIsWishlisted] = useState(false);
+   const [reviewExpanded, setReviewExpanded] = useState(false);
+   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [frequentlyBoughtTogether, setFrequentlyBoughtTogether] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
+   const [recentlyViewed, setRecentlyViewed] = useState([]);
 
-  const mockImages = [
+   const fetchWishlist = async () => {
+     try {
+       const res = await axiosInstance.get("/wishlist/");
+       const wishlistProducts = res.data.wishlist?.products?.map(p => p._id) || [];
+       setIsWishlisted(wishlistProducts.includes(id));
+     } catch (err) {
+       console.log("No wishlist found:", err.message);
+     }
+   };
+
+   const mockImages = [
     "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600",
     "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600",
     "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600",
@@ -244,7 +257,7 @@ export default function ViewSingleProduct() {
 
   const fetchSingleProduct = async () => {
     try {
-      const res = await axios.get(`http://localhost:7000/product/getsingleproduct/${id}`);
+      const res = await axiosInstance.get(`/product/getsingleproduct/${id}`);
       const pdata = res.data.pdata;
       setProduct(pdata);
       setRecommendedProducts(mockRecommended);
@@ -258,6 +271,7 @@ export default function ViewSingleProduct() {
 
   useEffect(() => {
     fetchSingleProduct();
+    fetchWishlist();
   }, [id]);
 
   const handleQuantityChange = (delta) => {
@@ -267,20 +281,64 @@ export default function ViewSingleProduct() {
     }
   };
 
-  const handleShare = (platform) => {
-    const url = window.location.href;
-    const text = `Check out this product: ${product?.name}`;
-    
-    if (platform === "twitter") {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank");
-    } else if (platform === "whatsapp") {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`, "_blank");
-    } else if (platform === "linkedin") {
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank");
-    }
-  };
+   const handleShare = (platform) => {
+     const url = window.location.href;
+     const text = `Check out this product: ${product?.name}`;
+     
+     if (platform === "twitter") {
+       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank");
+     } else if (platform === "whatsapp") {
+       window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`, "_blank");
+     } else if (platform === "linkedin") {
+       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank");
+     }
+   };
 
-  const calculateSavings = () => {
+   const toggleFavorite = async () => {
+     const token = localStorage.getItem("Token");
+     if (!token) {
+       setSnackbar({ open: true, message: "Please login to add to wishlist", severity: "info" });
+       return;
+     }
+
+     if (isWishlisted) {
+       setIsWishlisted(false);
+       try {
+         await axiosInstance.delete("/wishlist/remove", {
+           data: { itemId: product._id, type: "product" },
+         });
+         setSnackbar({ open: true, message: "Removed from wishlist", severity: "success" });
+       } catch (err) {
+         console.error("Error:", err);
+       }
+     } else {
+       setIsWishlisted(true);
+       try {
+         await axiosInstance.post("/wishlist/product", { productId: product._id });
+         setSnackbar({ open: true, message: "Added to wishlist", severity: "success" });
+       } catch (err) {
+         setIsWishlisted(false);
+         console.error("Error:", err);
+       }
+     }
+   };
+
+   const addToCart = async () => {
+     const token = localStorage.getItem("Token");
+     if (!token) {
+       setSnackbar({ open: true, message: "Please login to add to cart", severity: "info" });
+       return;
+     }
+
+     try {
+       await axiosInstance.post("/cart/product", { productId: product._id, quantity });
+       setSnackbar({ open: true, message: `Added ${quantity} item(s) to cart`, severity: "success" });
+     } catch (err) {
+       setSnackbar({ open: true, message: "Failed to add to cart", severity: "error" });
+     }
+   };
+
+   const calculateSavings = () => {
     if (!product?.price) return null;
     const originalPrice = product.price * 1.25;
     const savings = originalPrice - product.price;
@@ -413,9 +471,9 @@ export default function ViewSingleProduct() {
                 </Box>
               </Box>
 
-              <Box sx={{ display: "flex", gap: 1 }}>
+                <Box sx={{ display: "flex", gap: 1 }}>
                 <IconButton
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={toggleFavorite}
                   sx={{
                     background: "#f5f5f5",
                     "&:hover": { background: "#fee2e2" },
@@ -544,6 +602,7 @@ export default function ViewSingleProduct() {
                 variant="contained"
                 startIcon={<ShoppingCartOutlined />}
                 disabled={product.quantity <= 0}
+                onClick={addToCart}
                 sx={{
                   flex: 1,
                   py: 1.8,
@@ -684,11 +743,22 @@ export default function ViewSingleProduct() {
         onSelectProduct={(p) => navigate(`/product/${p._id}`)}
       />
 
-      <ProductCarousel
-        title="Recently Viewed"
-        products={recentlyViewed}
-        onSelectProduct={(p) => navigate(`/product/${p._id}`)}
-      />
-    </Container>
-  );
-}
+       <ProductCarousel
+         title="Recently Viewed"
+         products={recentlyViewed}
+         onSelectProduct={(p) => navigate(`/product/${p._id}`)}
+       />
+
+       <Snackbar
+         open={snackbar.open}
+         autoHideDuration={3000}
+         onClose={() => setSnackbar({ ...snackbar, open: false })}
+         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+       >
+         <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
+           {snackbar.message}
+         </Alert>
+       </Snackbar>
+     </Container>
+   );
+ }

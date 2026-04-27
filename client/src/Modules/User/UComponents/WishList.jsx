@@ -1,248 +1,316 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Container, Typography, Paper, Box, Grid, Avatar, Button, IconButton,
-  CircularProgress, Card, CardMedia, CardContent, CardActions,
-} from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import PetsIcon from '@mui/icons-material/Pets';
-import DeleteIcon from '@mui/icons-material/Delete';
+  Box,
+  Typography,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  Button,
+  Paper,
+  IconButton,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  .wishlist-card:hover {
-    box-shadow: 0 4px 20px rgba(255,107,107,0.15);
-    transform: translateY(-2px);
-  }
-`;
-document.head.appendChild(styleSheet);
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import PetsIcon from "@mui/icons-material/Pets";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+
+import axiosInstance from "../../../utils/axiosConfig";
+
+const DEFAULT_IMAGE = "https://placehold.co/400x400/F1F5F9/2563EB?text=No+Image";
+
+const PRIMARY_COLOR = "#2563EB";
 
 export default function WishList() {
   const navigate = useNavigate();
-  const [wishlistItems, setWishlistItems] = useState([]);
+  const [wishlist, setWishlist] = useState({ products: [], pets: [] });
   const [loading, setLoading] = useState(true);
-  const [removing, setRemoving] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
-    fetchWishlistItems();
+    fetchWishlist();
   }, []);
 
-  const fetchWishlistItems = async () => {
-    const token = localStorage.getItem('Token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
+  const fetchWishlist = async () => {
     try {
-      const res = await fetch('http://localhost:7000/wishlist/', {
-        headers: { 'auth-token': token }
-      });
-      const data = await res.json();
-      setWishlistItems(data.wishlistItems || []);
+      const res = await axiosInstance.get("/wishlist/");
+      setWishlist(res.data.wishlist || { products: [], pets: [] });
     } catch (err) {
-      console.log('Error fetching wishlist:', err);
+      console.error("Error fetching wishlist:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFromWishlist = async (itemId) => {
-    setRemoving(itemId);
-    const token = localStorage.getItem('Token');
-
+  const removeFromWishlist = async (itemId, type) => {
     try {
-      const res = await fetch(`http://localhost:7000/wishlist/remove/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'auth-token': token }
+      await axiosInstance.delete("/wishlist/remove", {
+        data: { itemId, type },
       });
-
-      if (res.ok) {
-        setWishlistItems(wishlistItems.filter(item => item._id !== itemId));
-      }
+      const res = await axiosInstance.get("/wishlist/");
+      setWishlist(res.data.wishlist || { products: [], pets: [] });
+      setSnackbar({ open: true, message: "Removed from wishlist", severity: "success" });
     } catch (err) {
-      console.log('Error removing from wishlist:', err);
-    } finally {
-      setRemoving(null);
+      setSnackbar({ open: true, message: "Failed to remove", severity: "error" });
     }
   };
 
   const addToCart = async (productId) => {
-    const token = localStorage.getItem('Token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
     try {
-      const res = await fetch('http://localhost:7000/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'auth-token': token
-        },
-        body: JSON.stringify({ productId, quantity: 1 })
-      });
-
-      if (res.ok) {
-        alert('Added to cart!');
-      }
+      await axiosInstance.post("/cart/product", { productId, quantity: 1 });
+      setSnackbar({ open: true, message: "Added to cart", severity: "success" });
     } catch (err) {
-      console.log('Error adding to cart:', err);
+      setSnackbar({ open: true, message: "Failed to add to cart", severity: "error" });
     }
   };
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress sx={{ color: '#FF6B6B' }} />
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ mb: 3 }}>
+          My Wishlist
+        </Typography>
+        <Grid container spacing={3}>
+          {[1, 2, 3, 4].map((i) => (
+            <Grid item xs={12} sm={6} lg={3} key={i}>
+              <Card sx={{ borderRadius: 3, overflow: "hidden" }}>
+                <Box sx={{ height: 220, bgcolor: "#f0f0f0" }} />
+                <CardContent>
+                  <Box sx={{ height: 24, width: "80%", bgcolor: "#f0f0f0", borderRadius: 1, mb: 1 }} />
+                  <Box sx={{ height: 16, width: "50%", bgcolor: "#f0f0f0", borderRadius: 1 }} />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     );
   }
 
+  const totalItems = wishlist.products.length + wishlist.pets.length;
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton
-          onClick={() => navigate(-1)}
-          sx={{
-            mr: 1,
-            background: '#f5f5f5',
-            '&:hover': { background: '#ffe8e8' }
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-        <Avatar sx={{ mr: 1.5, bgcolor: '#FF6B6B' }}>
-          <FavoriteIcon />
-        </Avatar>
-        <Typography variant="h5" fontWeight={700} sx={{ 
-          background: 'linear-gradient(135deg, #FF6B6B, #FF9A56)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>
-          My Wishlist
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h4" fontWeight={700}>
+          My Wishlist ({totalItems} items)
         </Typography>
+        <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={() => navigate(-1)}>
+          Continue Shopping
+        </Button>
       </Box>
 
-      {wishlistItems.length === 0 ? (
-        <Paper elevation={2} sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-          <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: '#ffe8e8', width: 80, height: 80 }}>
-            <FavoriteIcon sx={{ fontSize: 40, color: '#FF6B6B' }} />
-          </Avatar>
-          <Typography variant="h6" sx={{ mb: 1 }}>
+      {totalItems === 0 ? (
+        <Paper sx={{ p: 8, textAlign: "center", borderRadius: 3 }}>
+          <FavoriteBorderIcon sx={{ fontSize: 80, color: "#CBD5E1", mb: 2 }} />
+          <Typography variant="h5" sx={{ color: "#64748B", mb: 2 }}>
             Your wishlist is empty
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Save items you love to your wishlist to see them here.
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/homepage')}
-            sx={{
-              background: 'linear-gradient(135deg, #FF6B6B 0%, #FF9A56 100%)',
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 4,
-              py: 1,
-              '&:hover': {
-                background: 'linear-gradient(135deg, #FF5252 0%, #FF8C42 100%)'
-              }
-            }}
-          >
-            Start Shopping
+          <Button variant="contained" onClick={() => navigate("/")} sx={{ borderRadius: 3, background: PRIMARY_COLOR }}>
+            Explore Products
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
-          {wishlistItems.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item._id}>
-              <Paper
-                elevation={1}
-                className="wishlist-card"
-                sx={{
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <Box
-                  sx={{
-                    height: 180,
-                    overflow: 'hidden',
-                    position: 'relative',
-                    bgcolor: '#f5f5f5',
-                  }}
-                >
-                  {item.productID?.image ? (
-                    <img
-                      src={`http://localhost:7000/uploads/${item.productID.image}`}
-                      alt={item.productID?.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <Avatar sx={{ width: '100%', height: '100%', bgcolor: '#ffe8e8' }}>
-                      <PetsIcon sx={{ fontSize: 60, color: '#FF6B6B' }} />
-                    </Avatar>
-                  )}
-                  <IconButton
-                    onClick={() => removeFromWishlist(item._id)}
-                    disabled={removing === item._id}
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      bgcolor: 'rgba(255,255,255,0.9)',
-                      '&:hover': { bgcolor: '#fff', color: '#FF6B6B' },
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
+        <>
+          {wishlist.products.length > 0 && (
+            <Box sx={{ mb: 6 }}>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: "#1E293B" }}>
+                Products ({wishlist.products.length})
+              </Typography>
+              <Grid container spacing={3}>
+                {wishlist.products.map((product) => (
+                  <Grid item xs={12} sm={6} lg={3} key={product._id}>
+                    <Card
+                      sx={{
+                        borderRadius: 3,
+                        overflow: "hidden",
+                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        background: "#fff",
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                        "&:hover": {
+                          transform: "translateY(-8px)",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
+                        },
+                      }}
+                    >
+                      <Box sx={{ position: "relative", overflow: "hidden" }}>
+                        <CardMedia
+                          component="img"
+                          height="220"
+                          image={
+                            product.productimage
+                              ? `http://localhost:7000/image/${product.productimage}`
+                              : DEFAULT_IMAGE
+                          }
+                          alt={product.name}
+                          sx={{ objectFit: "cover", cursor: "pointer" }}
+                          onClick={() => navigate(`/viewsingleproduct/${product._id}`)}
+                        />
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 1,
+                          }}
+                        >
+                          <IconButton
+                            sx={{ bgcolor: "#fff", color: "#EF4444" }}
+                            onClick={() => removeFromWishlist(product._id, "product")}
+                          >
+                            <FavoriteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      <CardContent sx={{ p: 2 }}>
+                        <Typography
+                          fontWeight={600}
+                          noWrap
+                          sx={{
+                            color: "#1E293B",
+                            fontSize: "1rem",
+                            cursor: "pointer",
+                            "&:hover": { color: PRIMARY_COLOR },
+                          }}
+                          onClick={() => navigate(`/viewsingleproduct/${product._id}`)}
+                        >
+                          {product.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          ₹{product.price}
+                        </Typography>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          startIcon={<ShoppingCartIcon />}
+                          onClick={() => addToCart(product._id)}
+                          sx={{
+                            mt: 2,
+                            borderRadius: 3,
+                            textTransform: "none",
+                            fontWeight: 600,
+                            background: PRIMARY_COLOR,
+                          }}
+                        >
+                          Add to Cart
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
 
-                <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5 }}>
-                    {item.productID?.name || 'Product'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1, flex: 1 }}>
-                    {item.productID?.description?.substring(0, 60) || 'No description'}...
-                  </Typography>
-                  <Typography variant="h6" fontWeight={700} sx={{ color: '#FF6B6B', mb: 2 }}>
-                    ₹{item.productID?.price || 0}
-                  </Typography>
-                </CardContent>
-
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<ShoppingCartIcon />}
-                    onClick={() => addToCart(item.productID?._id)}
-                    sx={{
-                      background: 'linear-gradient(135deg, #FF6B6B 0%, #FF9A56 100%)',
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #FF5252 0%, #FF8C42 100%)'
-                      }
-                    }}
-                  >
-                    Add to Cart
-                  </Button>
-                </CardActions>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+          {wishlist.pets.length > 0 && (
+            <Box>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: "#1E293B" }}>
+                Pets ({wishlist.pets.length})
+              </Typography>
+              <Grid container spacing={3}>
+                {wishlist.pets.map((pet) => (
+                  <Grid item xs={12} sm={6} lg={3} key={pet._id}>
+                    <Card
+                      sx={{
+                        borderRadius: 3,
+                        overflow: "hidden",
+                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        background: "#fff",
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                        "&:hover": {
+                          transform: "translateY(-8px)",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
+                        },
+                      }}
+                    >
+                      <Box sx={{ position: "relative", overflow: "hidden" }}>
+                        <CardMedia
+                          component="img"
+                          height="220"
+                          image={pet.image ? `http://localhost:7000${pet.image}` : DEFAULT_IMAGE}
+                          alt={pet.name}
+                          sx={{ objectFit: "cover", cursor: "pointer" }}
+                          onClick={() => navigate(`/adopt/pet/${pet._id}`)}
+                        />
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 1,
+                          }}
+                        >
+                          <IconButton
+                            sx={{ bgcolor: "#fff", color: "#EF4444" }}
+                            onClick={() => removeFromWishlist(pet._id, "pet")}
+                          >
+                            <FavoriteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      <CardContent sx={{ p: 2 }}>
+                        <Typography
+                          fontWeight={600}
+                          noWrap
+                          sx={{
+                            color: "#1E293B",
+                            fontSize: "1rem",
+                            cursor: "pointer",
+                            "&:hover": { color: PRIMARY_COLOR },
+                          }}
+                          onClick={() => navigate(`/adopt/pet/${pet._id}`)}
+                        >
+                          {pet.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {pet.breed || "Unknown"} • {pet.age} yrs • {pet.gender}
+                        </Typography>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          startIcon={<PetsIcon />}
+                          onClick={() => navigate(`/adopt/pet/${pet._id}`)}
+                          sx={{
+                            mt: 2,
+                            borderRadius: 3,
+                            textTransform: "none",
+                            fontWeight: 600,
+                            background: PRIMARY_COLOR,
+                          }}
+                        >
+                          View Details
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </>
       )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

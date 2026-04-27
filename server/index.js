@@ -45,6 +45,8 @@ app.use('/booking', require('./Routes/BookingRoutes'))
 app.use('/payment', require('./Routes/PaymentRoutes'))
 app.use('/adopt', require('./Routes/AdoptRoutes'))
 app.use('/pet', require('./Routes/PetRoutes'))
+app.use('/wishlist', require('./Routes/WishlistRoutes'))
+app.use('/cart', require('./Routes/CartRoutes'))
 
 app.post('/image/upload', verifyToken, isAdmin, upload.single('petimage'), (req, res) => {
   if (!req.file) {
