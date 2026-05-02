@@ -8,9 +8,8 @@ const wishlistSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-wishlistSchema.pre('save', function(next) {
+wishlistSchema.pre('save', async function() {
   this.updatedAt = Date.now();
-  next();
 });
 
 module.exports = mongoose.model('Wishlist', wishlistSchema);

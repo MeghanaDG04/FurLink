@@ -85,7 +85,9 @@ export default function Adopt() {
     try {
       const token = localStorage.getItem("Token");
       if (!token) {
-        setSnackbar({ open: true, message: "Please login to submit adoption request", severity: "error" });
+        setTimeout(() => {
+          setSnackbar({ open: true, message: "Please login to submit adoption request", severity: "error" });
+        }, 0);
         return;
       }
 
@@ -108,7 +110,7 @@ export default function Adopt() {
       await axios.post("http://localhost:7000/adopt/create", payload, {
         headers: { "auth-token": token }
       });
-      setSnackbar({ open: true, message: "Adoption request submitted successfully!", severity: "success" });
+
       setFormData({
         petName: "",
         petType: "",
@@ -122,13 +124,19 @@ export default function Adopt() {
         phone: "",
         address: "",
       });
+
       fetchUserAdopts();
+      setTimeout(() => {
+        setSnackbar({ open: true, message: "Adoption request submitted successfully!", severity: "success" });
+      }, 0);
     } catch (err) {
-      setSnackbar({ 
-        open: true, 
-        message: err.response?.data?.message || "Failed to submit adoption request", 
-        severity: "error" 
-      });
+      setTimeout(() => {
+        setSnackbar({
+          open: true,
+          message: err.response?.data?.message || "Failed to submit adoption request",
+          severity: "error"
+        });
+      }, 0);
     }
   };
 

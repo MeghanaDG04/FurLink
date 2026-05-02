@@ -40,13 +40,9 @@ const AdoptionNavbar = () => {
       <AppBar
         position="sticky"
         sx={{
-          background: scrolled 
-            ? "rgba(255,255,255,0.98)" 
-            : "linear-gradient(135deg, rgba(62, 151, 220, 0.95) 0%, rgba(70, 191, 236, 0.95) 100%)",
+          background: "linear-gradient(135deg, rgba(62, 151, 220, 0.95) 0%, rgba(70, 191, 236, 0.95) 100%)",
           backdropFilter: "blur(10px)",
-          boxShadow: scrolled 
-            ? "0 4px 20px rgba(124,185,232,0.3)" 
-            : "0 2px 10px rgba(0,0,0,0.1)",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
           borderBottom: "2px solid rgba(255,255,255,0.3)",
           transition: "all 0.3s ease",
         }}
