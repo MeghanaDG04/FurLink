@@ -1,40 +1,53 @@
 import React, { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, IconButton, Rating, Chip,
+  TableHead, TableRow, IconButton, Rating, Chip, CircularProgress, Alert
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
-
-const defaultFeedbacks = [
-  { id: 1, user: 'John Doe', email: 'john@gmail.com', rating: 5, message: 'Excellent service! Very satisfied with the experience.', date: '2026-02-28' },
-  { id: 2, user: 'Jane Smith', email: 'jane@gmail.com', rating: 4, message: 'Good overall experience, minor improvements needed.', date: '2026-02-27' },
-  { id: 3, user: 'Mike Wilson', email: 'mike@gmail.com', rating: 3, message: 'Average service, could be better.', date: '2026-02-26' },
-  { id: 4, user: 'Sarah Brown', email: 'sarah@gmail.com', rating: 5, message: 'Amazing! Will definitely recommend to others.', date: '2026-02-25' },
-  { id: 5, user: 'Alex Johnson', email: 'alex@gmail.com', rating: 2, message: 'Not happy with the response time.', date: '2026-02-24' },
-]
+import axios from 'axios'
 
 export default function Feedback() {
   const [feedbacks, setFeedbacks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('feedbacks'))
-    if (stored) {
-      setFeedbacks(stored)
-    } else {
-      localStorage.setItem('feedbacks', JSON.stringify(defaultFeedbacks))
-      setFeedbacks(defaultFeedbacks)
-    }
+    fetchFeedbacks()
   }, [])
 
-  const handleDelete = (id) => {
-    const updated = feedbacks.filter((f) => f.id !== id)
-    setFeedbacks(updated)
-    localStorage.setItem('feedbacks', JSON.stringify(updated))
+  const fetchFeedbacks = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get('http://localhost:7000/feedback/all')
+      setFeedbacks(res.data.feedbacks || [])
+    } catch (err) {
+      setError('Failed to fetch feedback')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:7000/feedback/delete/${id}`)
+      setFeedbacks(feedbacks.filter((f) => f._id !== id))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const avgRating = feedbacks.length > 0
     ? (feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length).toFixed(1)
     : 0
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box>
@@ -44,6 +57,8 @@ export default function Feedback() {
       <Typography variant="body1" color="text.secondary" mb={4}>
         View all user feedback and ratings.
       </Typography>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {/* Summary */}
       <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
@@ -96,6 +111,7 @@ export default function Feedback() {
                 <TableCell sx={{ color: '#fff', fontWeight: 700 }}>#</TableCell>
                 <TableCell sx={{ color: '#fff', fontWeight: 700 }}>User</TableCell>
                 <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Email</TableCell>
+                <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Target</TableCell>
                 <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Rating</TableCell>
                 <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Message</TableCell>
                 <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Date</TableCell>
@@ -104,27 +120,34 @@ export default function Feedback() {
             </TableHead>
             <TableBody>
               {feedbacks.length > 0 ? feedbacks.map((fb, index) => (
-                <TableRow key={fb.id} sx={{
+                <TableRow key={fb._id} sx={{
                   '&:hover': { bgcolor: 'rgba(102,126,234,0.05)' },
                   transition: 'background 0.2s',
                 }}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{fb.user}</TableCell>
-                  <TableCell>{fb.email}</TableCell>
+                  <TableCell>{fb.userId?.name || 'Anonymous'}</TableCell>
+                  <TableCell>{fb.userId?.email || ''}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={fb.targetType === 'product' ? `Product: ${fb.targetName}` : `Adoption: ${fb.targetName}`}
+                      size="small"
+                      color={fb.targetType === 'product' ? 'primary' : 'secondary'}
+                    />
+                  </TableCell>
                   <TableCell>
                     <Rating value={fb.rating} readOnly size="small" />
                   </TableCell>
-                  <TableCell sx={{ maxWidth: 250 }}>{fb.message}</TableCell>
-                  <TableCell>{fb.date}</TableCell>
+                  <TableCell sx={{ maxWidth: 250 }}>{fb.comment}</TableCell>
+                  <TableCell>{new Date(fb.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell align="center">
-                    <IconButton color="error" onClick={() => handleDelete(fb.id)} size="small">
+                    <IconButton color="error" onClick={() => handleDelete(fb._id)} size="small">
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                     <Typography color="text.secondary">No feedback found</Typography>
                   </TableCell>
                 </TableRow>

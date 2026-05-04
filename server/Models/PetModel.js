@@ -10,9 +10,10 @@ const petSchema = new mongoose.Schema({
   description: { type: String },
   status: { 
     type: String, 
-    enum: ['Available', 'Adopted', 'Pending'], 
-    default: 'Available' 
+    enum: ['Pending', 'Available', 'Adopted', 'Rejected'], 
+    default: 'Pending' 
   },
+  submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now },
   adoptedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   adoptionDate: { type: Date }

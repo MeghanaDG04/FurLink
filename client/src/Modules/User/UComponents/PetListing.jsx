@@ -25,6 +25,7 @@ import {
   Avatar,
   Fade,
   Divider,
+  Drawer,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -67,6 +68,7 @@ const PetListing = () => {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -519,8 +521,8 @@ const PetListing = () => {
       <Box id="pets" sx={{ py: 4, background: "#F1F5F9" }}>
         <Container maxWidth="xl">
           <Grid container spacing={3}>
-            {/* FILTERS SIDEBAR - Desktop */}
-            <Grid item xs={12} md={3} sx={{ display: showFilters ? "block" : "none" }}>
+             {/* FILTERS SIDEBAR - Desktop */}
+             <Grid item xs={12} md={3} sx={{ display: showFilters ? "block" : "none" }}>
               <Paper
                 elevation={0}
                 sx={{

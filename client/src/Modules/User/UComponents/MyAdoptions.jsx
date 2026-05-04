@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import {
   Box, Typography, Container, Card, CardContent, Grid,
   Chip, CircularProgress, Alert, Button, Dialog, DialogTitle,
-  DialogContent, DialogActions, Divider, Snackbar, Paper
+  DialogContent, DialogActions, Divider, Snackbar, Paper,
+  Rating
 } from "@mui/material";
 import PetsIcon from "@mui/icons-material/Pets";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
+import FeedbackIcon from "@mui/icons-material/Feedback";
 import axios from "axios";
 
 const DEFAULT_PET_IMAGE = "https://placehold.co/400x400/F1F5FC/7CB9E8?text=No+Image";
@@ -75,6 +77,38 @@ const MyAdoptions = () => {
         severity: "error" 
       });
     }
+  };
+
+  const [openFeedback, setOpenFeedback] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [selectedAdoptionForFeedback, setSelectedAdoptionForFeedback] = useState(null);
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackRating || !feedbackComment) return;
+    setSubmittingFeedback(true);
+    try {
+      await axios.post("http://localhost:7000/feedback/add", {
+        targetId: selectedAdoptionForFeedback._id,
+        targetType: "adoption",
+        rating: feedbackRating,
+        comment: feedbackComment
+      }, { headers: { "auth-token": localStorage.getItem("Token") } });
+      setSnackbar({ open: true, message: "Feedback submitted successfully", severity: "success" });
+      setOpenFeedback(false);
+      setFeedbackRating(0);
+      setFeedbackComment("");
+    } catch (err) {
+      setSnackbar({ open: true, message: "Failed to submit feedback", severity: "error" });
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
+
+  const handleOpenFeedback = (adoption) => {
+    setSelectedAdoptionForFeedback(adoption);
+    setOpenFeedback(true);
   };
 
   if (loading) {
@@ -197,6 +231,16 @@ const MyAdoptions = () => {
                           sx={{ fontWeight: 600 }}
                         >
                           Cancel
+                        </Button>
+                      )}
+                      {adoption.status === "Approved" && (
+                        <Button
+                          size="small"
+                          startIcon={<FeedbackIcon />}
+                          onClick={() => handleOpenFeedback(adoption)}
+                          sx={{ color: "#667eea", fontWeight: 600 }}
+                        >
+                          Give Feedback
                         </Button>
                       )}
                     </Box>
@@ -337,6 +381,33 @@ const MyAdoptions = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDetails(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Feedback Dialog */}
+        <Dialog open={openFeedback} onClose={() => setOpenFeedback(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Share Your Adoption Experience</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" sx={{ mb: 1 }}>Rating</Typography>
+              <Rating value={feedbackRating} onChange={(e, val) => setFeedbackRating(val)} size="large" />
+            </Box>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" sx={{ mb: 1 }}>Your Feedback</Typography>
+              <textarea
+                rows={4}
+                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                value={feedbackComment}
+                onChange={(e) => setFeedbackComment(e.target.value)}
+                placeholder="Share your experience with the adoption process..."
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenFeedback(false)}>Cancel</Button>
+            <Button variant="contained" onClick={handleSubmitFeedback} disabled={!feedbackRating || !feedbackComment || submittingFeedback}>
+              Submit Feedback
+            </Button>
           </DialogActions>
         </Dialog>
 

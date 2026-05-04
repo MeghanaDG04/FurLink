@@ -20,6 +20,8 @@ import PetListing from '../UComponents/PetListing'
 import PetDetail from '../UComponents/PetDetail'
 import MyAdoptions from '../UComponents/MyAdoptions'
 import AdoptionAbout from '../UComponents/AdoptionAbout'
+import UserSubmitPet from '../UComponents/UserSubmitPet'
+import UserMyPets from '../UComponents/UserMyPets'
 
 
 function AppContent(){
@@ -52,6 +54,8 @@ function AppContent(){
             <Route path='pet/:id' element={<PetDetail/>} />
             <Route path='my-adoptions' element={<MyAdoptions/>} />
             <Route path='about' element={<AdoptionAbout/>} />
+            <Route path='submit-pet' element={<UserSubmitPet/>} />
+            <Route path='my-pets' element={<UserMyPets/>} />
           </Route>
       </Routes>
     </div>

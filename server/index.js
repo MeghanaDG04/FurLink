@@ -47,8 +47,9 @@ app.use('/adopt', require('./Routes/AdoptRoutes'))
 app.use('/pet', require('./Routes/PetRoutes'))
 app.use('/wishlist', require('./Routes/WishlistRoutes'))
 app.use('/cart', require('./Routes/CartRoutes'))
+app.use('/feedback', require('./Routes/FeedbackRoutes'))
 
-app.post('/image/upload', verifyToken, isAdmin, upload.single('petimage'), (req, res) => {
+app.post('/image/upload', verifyToken, upload.single('petimage'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }

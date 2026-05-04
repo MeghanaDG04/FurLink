@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, IconButton, Button, TextField, Dialog, DialogTitle,
   DialogContent, DialogActions, Alert, FormControl, InputLabel, Select, MenuItem, Chip
-} from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
-import AddIcon from '@mui/icons-material/Add'
-import PetsIcon from '@mui/icons-material/Pets'
-import axios from 'axios'
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import PetsIcon from '@mui/icons-material/Pets';
+import axios from 'axios';
 
 const DEFAULT_PET_IMAGE = "https://placehold.co/80x80/F1F5FC/7CB9E8?text=No+Image";
 const SERVER_URL = "http://localhost:7000";
@@ -35,18 +37,25 @@ export default function ManagePets() {
 
   const petTypes = ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Guinea Pig", "Fish", "Other"];
   const petGenders = ["Male", "Female", "Other"];
-  const petStatuses = ["Available", "Adopted", "Pending"];
+  const petStatuses = ["Available", "Adopted", "Pending", "Rejected"];
 
   // FETCH PETS
   const fetchPets = () => {
     const token = localStorage.getItem('adminToken');
+    console.log('ManagePets - Token:', token ? 'Present' : 'Missing'); // Debug
     axios.get(`${SERVER_URL}/pet/admin/all`, {
       headers: { 'auth-token': token }
     })
       .then((res) => {
         setPets(res.data.pets)
       })
-      .catch((err) => console.log(err))
+      .catch((err) => {
+        console.error('Fetch pets error:', err.response?.status, err.response?.data);
+        if (err.response?.status === 401) {
+          alert('Session expired. Please login again.');
+          window.location.href = '/admin/login';
+        }
+      })
   }
 
   useEffect(() => {
@@ -56,14 +65,13 @@ export default function ManagePets() {
   const handleChange = (e) => {
     if (e.target.name === 'image' && e.target.files) {
       setSelectedFile(e.target.files[0]);
-      // Keep existing image URL in form for non-file case
       if (e.target.files[0]) {
-        setForm({ ...form, image: '' }); // Clear URL when file selected
+        setForm({ ...form, image: '' });
       }
     } else {
       setForm({ ...form, [e.target.name]: e.target.value })
     }
-  }
+  };
 
   const handleEdit = (pet) => {
     setForm({
@@ -76,7 +84,7 @@ export default function ManagePets() {
       description: pet.description || '',
       status: pet.status
     })
-    setSelectedFile(null) // Reset file selection when editing
+    setSelectedFile(null)
     setEditId(pet._id)
     setOpen(true)
   }
@@ -102,7 +110,6 @@ export default function ManagePets() {
 
     const token = localStorage.getItem('adminToken');
 
-    // Prepare payload - for new pets, we'll handle image upload separately
     const payload = {
       name: form.name,
       type: form.type,
@@ -111,7 +118,7 @@ export default function ManagePets() {
       gender: form.gender,
       description: form.description,
       status: form.status,
-      image: form.image // existing image URL (for edit without new file)
+      image: form.image
     };
 
     const createOrUpdate = (imageUrl) => {
@@ -175,10 +182,72 @@ export default function ManagePets() {
     }
   }
 
+  const handleApprove = async (id) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.put(`${SERVER_URL}/pet/admin/approve/${id}`, {}, {
+        headers: { 'auth-token': token }
+      });
+      setSuccess("Pet approved successfully!");
+      setTimeout(() => setSuccess(''), 3000);
+      fetchPets();
+    } catch (err) {
+      setSuccess(err.response?.data?.message || "Failed to approve pet");
+      setTimeout(() => setSuccess(''), 3000);
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (!window.confirm("Are you sure you want to reject this pet submission?")) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.put(`${SERVER_URL}/pet/admin/reject/${id}`, {}, {
+        headers: { 'auth-token': token }
+      });
+      setSuccess("Pet rejected successfully!");
+      setTimeout(() => setSuccess(''), 3000);
+      fetchPets();
+    } catch (err) {
+      setSuccess(err.response?.data?.message || "Failed to reject pet");
+      setTimeout(() => setSuccess(''), 3000);
+    }
+  };
+
   const getImageUrl = (imagePath) => {
     if (!imagePath) return DEFAULT_PET_IMAGE;
     if (imagePath.startsWith('http')) return imagePath;
     return `${SERVER_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Available': return 'rgba(76, 175, 80, 0.15)';
+      case 'Adopted': return 'rgba(158, 158, 158, 0.15)';
+      case 'Pending': return 'rgba(255, 152, 0, 0.15)';
+      case 'Rejected': return 'rgba(239, 68, 68, 0.15)';
+      default: return 'rgba(158, 158, 158, 0.15)';
+    }
+  };
+
+  const getStatusTextColor = (status) => {
+    switch (status) {
+      case 'Available': return '#2E7D32';
+      case 'Adopted': return '#616161';
+      case 'Pending': return '#F57C00';
+      case 'Rejected': return '#D32F2F';
+      default: return '#616161';
+    }
+  };
+
+  const getStatusBorderColor = (status) => {
+    switch (status) {
+      case 'Available': return 'rgba(76, 175, 80, 0.3)';
+      case 'Adopted': return 'rgba(158, 158, 158, 0.3)';
+      case 'Pending': return 'rgba(255, 152, 0, 0.3)';
+      case 'Rejected': return 'rgba(239, 68, 68, 0.3)';
+      default: return 'rgba(158, 158, 158, 0.3)';
+    }
   };
 
   return (
@@ -190,7 +259,7 @@ export default function ManagePets() {
             Manage Pets
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            View, add, edit, or delete pets for adoption
+            View, add, edit, approve, or reject pet submissions
           </Typography>
         </Box>
 
@@ -215,7 +284,7 @@ export default function ManagePets() {
           </Button>
       </Box>
 
-      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      {success && <Alert severity={success.includes('failed') || success.includes('Failed') ? 'error' : 'success'} sx={{ mb: 2 }}>{success}</Alert>}
 
       <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
         <TableContainer>
@@ -298,46 +367,71 @@ export default function ManagePets() {
                         label={pet.status}
                         size="small"
                         sx={{
-                          bgcolor:
-                            pet.status === 'Available' ? 'rgba(76, 175, 80, 0.15)' :
-                            pet.status === 'Adopted' ? 'rgba(158, 158, 158, 0.15)' :
-                            'rgba(255, 152, 0, 0.15)',
-                          color:
-                            pet.status === 'Available' ? '#2E7D32' :
-                            pet.status === 'Adopted' ? '#616161' :
-                            '#F57C00',
+                          bgcolor: getStatusColor(pet.status),
+                          color: getStatusTextColor(pet.status),
                           fontWeight: 600,
-                          border: `1px solid ${
-                            pet.status === 'Available' ? 'rgba(76, 175, 80, 0.3)' :
-                            pet.status === 'Adopted' ? 'rgba(158, 158, 158, 0.3)' :
-                            'rgba(255, 152, 0, 0.3)'
-                          }`
+                          border: `1px solid ${getStatusBorderColor(pet.status)}`
                         }}
                       />
                     </TableCell>
 
                     <TableCell align="center">
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(pet)}
-                        sx={{
-                          bgcolor: 'rgba(124,185,232,0.1)',
-                          '&:hover': { bgcolor: 'rgba(124,185,232,0.2)' }
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                        {pet.status === 'Pending' && (
+                          <>
+                            <IconButton
+                              color="success"
+                              onClick={() => handleApprove(pet._id)}
+                              sx={{
+                                bgcolor: 'rgba(76, 175, 80, 0.1)',
+                                '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.2)' }
+                              }}
+                              title="Approve Pet"
+                              size="small"
+                            >
+                              <CheckCircleIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              color="error"
+                              onClick={() => handleReject(pet._id)}
+                              sx={{
+                                bgcolor: 'rgba(239, 68, 68, 0.1)',
+                                '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.2)' }
+                              }}
+                              title="Reject Pet"
+                              size="small"
+                            >
+                              <CancelIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        )}
 
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(pet._id)}
-                        sx={{
-                          bgcolor: 'rgba(239,68,68,0.1)',
-                          '&:hover': { bgcolor: 'rgba(239,68,68,0.2)' }
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleEdit(pet)}
+                          sx={{
+                            bgcolor: 'rgba(124,185,232,0.1)',
+                            '&:hover': { bgcolor: 'rgba(124,185,232,0.2)' }
+                          }}
+                          title="Edit Pet"
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDelete(pet._id)}
+                          sx={{
+                            bgcolor: 'rgba(239,68,68,0.1)',
+                            '&:hover': { bgcolor: 'rgba(239,68,68,0.2)' }
+                          }}
+                          title="Delete Pet"
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))

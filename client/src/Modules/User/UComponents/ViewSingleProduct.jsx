@@ -27,6 +27,10 @@ import {
   Skeleton,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -78,6 +82,66 @@ const ReviewCard = ({ review }) => (
     </Typography>
   </Box>
 );
+
+const FeedbackForm = ({ productId, onFeedbackSubmitted }) => {
+  const [open, setOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!rating || !comment) return;
+    setSubmitting(true);
+    try {
+      await axiosInstance.post("/feedback/add", {
+        targetId: productId,
+        targetType: "product",
+        rating,
+        comment
+      });
+      setRating(0);
+      setComment("");
+      setOpen(false);
+      onFeedbackSubmitted();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)} sx={{ mt: 2 }}>
+        Write a Review
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Write a Review</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ mb: 1 }}>Rating</Typography>
+            <Rating value={rating} onChange={(e, val) => setRating(val)} size="large" />
+          </Box>
+          <TextField
+            label="Comment"
+            multiline
+            rows={4}
+            fullWidth
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleSubmit} disabled={!rating || !comment || submitting}>
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
 
 const ProductCard = ({ product, onSelect, isCompact = false }) => (
   <Card
@@ -198,40 +262,44 @@ export default function ViewSingleProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState(null);
+const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
-   const [isWishlisted, setIsWishlisted] = useState(false);
-   const [reviewExpanded, setReviewExpanded] = useState(false);
-   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [reviewExpanded, setReviewExpanded] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [feedbacks, setFeedbacks] = useState([]);
 
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [frequentlyBoughtTogether, setFrequentlyBoughtTogether] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
-   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
-   const fetchWishlist = async () => {
-     try {
-       const res = await axiosInstance.get("/wishlist/");
-       const wishlistProducts = res.data.wishlist?.products?.map(p => p._id) || [];
-       setIsWishlisted(wishlistProducts.includes(id));
-     } catch (err) {
-       console.log("No wishlist found:", err.message);
-     }
-   };
+const fetchWishlist = async () => {
+      try {
+        const res = await axiosInstance.get("/wishlist/");
+        const wishlistProducts = res.data.wishlist?.products?.map(p => p._id) || [];
+        setIsWishlisted(wishlistProducts.includes(id));
+      } catch (err) {
+        console.log("No wishlist found:", err.message);
+      }
+    };
 
-   const mockImages = [
+    const fetchFeedbacks = async () => {
+      try {
+        const res = await axiosInstance.get(`/feedback/target/product/${id}`);
+        setFeedbacks(res.data.feedbacks || []);
+      } catch (err) {
+        console.log("No feedbacks found:", err.message);
+      }
+    };
+
+const mockImages = [
     "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600",
     "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600",
     "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600",
     "https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?w=600"
-  ];
-
-  const mockReviews = [
-    { userName: "Priya S.", rating: 5, comment: "My golden retriever loves this! Great quality and fast delivery.", date: "2 days ago" },
-    { userName: "Rajesh K.", rating: 4, comment: "Good product, slightly expensive but worth it.", date: "1 week ago" },
-    { userName: "Anita M.", rating: 5, comment: "Best purchase for my pet. Highly recommended!", date: "2 weeks ago" }
   ];
 
   const mockRecommended = [
@@ -272,6 +340,7 @@ export default function ViewSingleProduct() {
   useEffect(() => {
     fetchSingleProduct();
     fetchWishlist();
+    fetchFeedbacks();
   }, [id]);
 
   const handleQuantityChange = (delta) => {
@@ -463,12 +532,12 @@ export default function ViewSingleProduct() {
                   {product.name}
                 </Typography>
 
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
+                {/* <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
                   <StarRating value={4.5} readOnly />
                   <Typography variant="body2" color="text.secondary">
                     <span style={{ fontWeight: 600, color: "#1976d2" }}>4.5</span> (128 reviews)
                   </Typography>
-                </Box>
+                </Box> */}
               </Box>
 
                 <Box sx={{ display: "flex", gap: 1 }}>
@@ -643,7 +712,7 @@ export default function ViewSingleProduct() {
             </Box>
           </Grid>
         </Grid>
-      </Paper>
+</Paper>
 
       <Accordion
         expanded={reviewExpanded}
@@ -655,38 +724,25 @@ export default function ViewSingleProduct() {
           sx={{ bgcolor: "#fafafa", borderRadius: "12px" }}
         >
           <Typography variant="h6" fontWeight={600}>
-            Customer Reviews (128)
+            Customer Reviews ({feedbacks.length})
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ bgcolor: "#fff", borderRadius: "0 0 12px 12px" }}>
-          <Box sx={{ display: "flex", gap: 3, mb: 3, p: 2, bgcolor: "#f8fafc", borderRadius: 2 }}>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight={700}>4.5</Typography>
-              <StarRating value={4.5} readOnly size="small" />
-              <Typography variant="body2" color="text.secondary">128 reviews</Typography>
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              {[5, 4, 3, 2, 1].map((stars) => (
-                <Box key={stars} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                  <Typography variant="caption" sx={{ width: 20 }}>{stars}</Typography>
-                  <Box sx={{ flex: 1, height: 8, bgcolor: "#e0e0e0", borderRadius: 1, overflow: "hidden" }}>
-                    <Box
-                      sx={{
-                        height: "100%",
-                        width: stars === 5 ? "70%" : stars === 4 ? "20%" : stars === 3 ? "5%" : "5%",
-                        bgcolor: "#f59e0b",
-                        borderRadius: 1
-                      }}
-                    />
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-          <Divider sx={{ mb: 2 }} />
-          {mockReviews.map((review, index) => (
-            <ReviewCard key={index} review={review} />
-          ))}
+          <FeedbackForm productId={product._id} onFeedbackSubmitted={fetchFeedbacks} />
+          {feedbacks.length > 0 ? (
+            feedbacks.map((feedback, index) => (
+              <ReviewCard key={feedback._id || index} review={{
+                userName: feedback.userId?.name || "Anonymous",
+                rating: feedback.rating,
+                comment: feedback.comment,
+                date: new Date(feedback.createdAt).toLocaleDateString()
+              }} />
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+              No reviews yet. Be the first to review this product!
+            </Typography>
+          )}
         </AccordionDetails>
       </Accordion>
 

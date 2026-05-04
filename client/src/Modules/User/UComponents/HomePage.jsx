@@ -1097,7 +1097,7 @@ export default function HomePage() {
                               </Typography>
                             </Box>
 
-                            <Button
+                            {/* <Button
                               fullWidth
                               variant="contained"
                               startIcon={<ShoppingCartIcon />}
@@ -1120,7 +1120,7 @@ export default function HomePage() {
                               }}
                             >
                               Add to Cart
-                            </Button>
+                            </Button> */}
                           </CardContent>
                         </Card>
                       </Grow>
