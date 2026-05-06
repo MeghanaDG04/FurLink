@@ -10,6 +10,13 @@ import PetsIcon from "@mui/icons-material/Pets";
 import axios from "axios";
 
 const DEFAULT_PET_IMAGE = "https://placehold.co/400x400/F1F5F9/2563EB?text=No+Image";
+const SERVER_URL = "http://localhost:7000";
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return DEFAULT_PET_IMAGE;
+  if (imagePath.startsWith("http")) return imagePath;
+  return `${SERVER_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+};
 
 export default function ManageAdopt() {
   const [adopts, setAdopts] = useState([]);
@@ -125,25 +132,25 @@ export default function ManageAdopt() {
                   <TableRow key={adopt._id} hover>
                     <TableCell>{index + 1}</TableCell>
 
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Box sx={{ width: 48, height: 48, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
-                          <img
-                            src={adopt.petImage || DEFAULT_PET_IMAGE}
-                            alt={adopt.petName}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        </Box>
-                        <Box>
-                          <Typography fontWeight={600} color="#1E293B">
-                            {adopt.petName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {adopt.petGender} • {adopt.petAge} yrs
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
+                     <TableCell>
+                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                         <Box sx={{ width: 48, height: 48, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
+                           <img
+                             src={getImageUrl(adopt.petImage) || DEFAULT_PET_IMAGE}
+                             alt={adopt.petName}
+                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                           />
+                         </Box>
+                         <Box>
+                           <Typography fontWeight={600} color="#1E293B">
+                             {adopt.petName}
+                           </Typography>
+                           <Typography variant="caption" color="text.secondary">
+                             {adopt.petGender} • {adopt.petAge} yrs
+                           </Typography>
+                         </Box>
+                       </Box>
+                     </TableCell>
 
                     <TableCell>
                       <Typography fontWeight={500}>
@@ -251,20 +258,20 @@ export default function ManageAdopt() {
         <DialogContent dividers>
           {selectedAdopt && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center" }}>
-                  <img
-                    src={selectedAdopt.petImage || DEFAULT_PET_IMAGE}
-                    alt={selectedAdopt.petName}
-                    style={{
-                      width: "100%",
-                      maxHeight: 300,
-                      objectFit: "cover",
-                      borderRadius: 12,
-                    }}
-                  />
-                </Box>
-              </Grid>
+               <Grid item xs={12} md={4}>
+                 <Box sx={{ textAlign: "center" }}>
+                   <img
+                     src={getImageUrl(selectedAdopt.petImage) || DEFAULT_PET_IMAGE}
+                     alt={selectedAdopt.petName}
+                     style={{
+                       width: "100%",
+                       maxHeight: 300,
+                       objectFit: "cover",
+                       borderRadius: 12,
+                     }}
+                   />
+                 </Box>
+               </Grid>
               <Grid item xs={12} md={8}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
                   <Typography variant="h5" fontWeight={700} color="#1E293B">

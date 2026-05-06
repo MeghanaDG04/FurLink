@@ -411,7 +411,7 @@ export default function BookingForm() {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              {/* <TextField
                 label="Product ID"
                 name="productID"
                 fullWidth
@@ -427,7 +427,7 @@ export default function BookingForm() {
                     </InputAdornment>
                   ),
                 }}
-              />
+              /> */}
             </Grid>
 
             <Grid item xs={12}>

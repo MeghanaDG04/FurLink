@@ -404,55 +404,97 @@ const PetListing = () => {
                   >
                     Give a loving home to a pet in need. Browse adorable pets waiting for their forever families.
                   </Typography>
-                  <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                    <Button
-                      variant="contained"
-                      size="large"
-                      startIcon={<PetsIcon />}
-                      onClick={() =>
-                        document.getElementById("pets")?.scrollIntoView()
-                      }
-                      sx={{
-                        background: ACCENT_COLOR,
-                        color: "#fff",
-                        px: 4,
-                        py: 1.5,
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        borderRadius: 3,
-                        textTransform: "none",
-                        boxShadow: `0 8px 25px ${ACCENT_COLOR}40`,
-                        "&:hover": {
-                          background: "#D97706",
-                          transform: "translateY(-2px)",
-                        },
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      Adopt Now
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      onClick={() => navigate("/adopt/about")}
-                      sx={{
-                        borderColor: "rgba(255,255,255,0.5)",
-                        color: "#fff",
-                        px: 4,
-                        py: 1.5,
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        borderRadius: 3,
-                        textTransform: "none",
-                        "&:hover": {
-                          borderColor: "#fff",
-                          background: "rgba(255,255,255,0.1)",
-                        },
-                      }}
-                    >
-                      Learn More
-                    </Button>
-                  </Box>
+                   <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                     <Button
+                       variant="contained"
+                       size="large"
+                       startIcon={<PetsIcon />}
+                       onClick={() =>
+                         document.getElementById("pets")?.scrollIntoView()
+                       }
+                       sx={{
+                         background: ACCENT_COLOR,
+                         color: "#fff",
+                         px: 4,
+                         py: 1.5,
+                         fontSize: "1rem",
+                         fontWeight: 600,
+                         borderRadius: 3,
+                         textTransform: "none",
+                         boxShadow: `0 8px 25px ${ACCENT_COLOR}40`,
+                         "&:hover": {
+                           background: "#D97706",
+                           transform: "translateY(-2px)",
+                         },
+                         transition: "all 0.3s ease",
+                       }}
+                     >
+                       Adopt Now
+                     </Button>
+                     <Button
+                       variant="outlined"
+                       size="large"
+                       onClick={() => navigate("/adopt/about")}
+                       sx={{
+                         borderColor: "rgba(255,255,255,0.5)",
+                         color: "#fff",
+                         px: 4,
+                         py: 1.5,
+                         fontSize: "1rem",
+                         fontWeight: 600,
+                         borderRadius: 3,
+                         textTransform: "none",
+                         "&:hover": {
+                           borderColor: "#fff",
+                           background: "rgba(255,255,255,0.1)",
+                         },
+                       }}
+                     >
+                       Learn More
+                     </Button>
+                     <Button
+                       variant="outlined"
+                       size="large"
+                       onClick={() => navigate("/adopt/submit-pet")}
+                       sx={{
+                         borderColor: "rgba(255,255,255,0.5)",
+                         color: "#fff",
+                         px: 4,
+                         py: 1.5,
+                         fontSize: "1rem",
+                         fontWeight: 600,
+                         borderRadius: 3,
+                         textTransform: "none",
+                         "&:hover": {
+                           borderColor: "#fff",
+                           background: "rgba(255,255,255,0.1)",
+                         },
+                       }}
+                     >
+                       Add Your Pet
+                     </Button>
+                     <Button
+                       variant="outlined"
+                       size="large"
+                       onClick={() => navigate("/adopt/my-pets")}
+                       sx={{
+                         borderColor: "rgba(255,255,255,0.5)",
+                         color: "#fff",
+                         px: 4,
+                         py: 1.5,
+                         fontSize: "1rem",
+                         fontWeight: 600,
+                         borderRadius: 3,
+                         textTransform: "none",
+                         "&:hover": {
+                           borderColor: "#fff",
+                           background: "rgba(255,255,255,0.1)",
+                         },
+                       }}
+                     >
+                       My Pet Status
+                     </Button>
+                   </Box>
                 </Box>
               </Fade>
             </Grid>
@@ -822,7 +864,7 @@ const PetListing = () => {
                   </Typography>
                 </Box>
 
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                 <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
                   {/* Search */}
                   <TextField
                     size="small"
@@ -865,6 +907,44 @@ const PetListing = () => {
                       ))}
                     </Select>
                   </FormControl>
+                  {/* Add Pet Button */}
+                  <Button
+                    variant="contained"
+                    startIcon={<PetsIcon />}
+                    onClick={() => navigate("/adopt/submit-pet")}
+                    sx={{
+                      borderRadius: 3,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, #3B82F6 100%)`,
+                      boxShadow: `0 4px 14px ${PRIMARY_COLOR}40`,
+                      "&:hover": {
+                        background: `linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%)`,
+                        boxShadow: `0 6px 20px ${PRIMARY_COLOR}40`,
+                      },
+                    }}
+                  >
+                    Add Pet
+                  </Button>
+                  {/* My Pets Status Button */}
+                  <Button
+                    variant="outlined"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => navigate("/adopt/my-pets")}
+                    sx={{
+                      borderRadius: 3,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderColor: PRIMARY_COLOR,
+                      color: PRIMARY_COLOR,
+                      "&:hover": {
+                        borderColor: "#1D4ED8",
+                        background: "rgba(37, 99, 235, 0.05)",
+                      },
+                    }}
+                  >
+                    My Status
+                  </Button>
                 </Box>
               </Paper>
 

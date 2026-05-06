@@ -13,6 +13,13 @@ import FeedbackIcon from "@mui/icons-material/Feedback";
 import axios from "axios";
 
 const DEFAULT_PET_IMAGE = "https://placehold.co/400x400/F1F5FC/7CB9E8?text=No+Image";
+const SERVER_URL = "http://localhost:7000";
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return DEFAULT_PET_IMAGE;
+  if (imagePath.startsWith("http")) return imagePath;
+  return `${SERVER_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+};
 
 const MyAdoptions = () => {
   const navigate = useNavigate();
@@ -169,22 +176,22 @@ const MyAdoptions = () => {
                 >
                   <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
                     <Box sx={{ display: "flex", gap: 2 }}>
-                      <Box
-                        sx={{
-                          width: 100,
-                          height: 100,
-                          borderRadius: 2,
-                          overflow: "hidden",
-                          flexShrink: 0,
-                          background: "#f0f0f0",
-                        }}
-                      >
-                        <img
-                          src={adoption.petImage || DEFAULT_PET_IMAGE}
-                          alt={adoption.petName}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      </Box>
+                       <Box
+                         sx={{
+                           width: 100,
+                           height: 100,
+                           borderRadius: 2,
+                           overflow: "hidden",
+                           flexShrink: 0,
+                           background: "#f0f0f0",
+                         }}
+                       >
+                         <img
+                           src={getImageUrl(adoption.petImage) || DEFAULT_PET_IMAGE}
+                           alt={adoption.petName}
+                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                         />
+                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
                           <Typography fontWeight={700} fontSize="1.1rem" color="#1E293B" noWrap>
@@ -290,34 +297,34 @@ const MyAdoptions = () => {
           <DialogContent dividers>
             {selectedAdoption && (
               <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                    <img
-                      src={selectedAdoption.petImage || DEFAULT_PET_IMAGE}
-                      alt={selectedAdoption.petName}
-                      style={{
-                        width: 120,
-                        height: 120,
-                        objectFit: "cover",
-                        borderRadius: 8,
-                      }}
-                    />
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        {selectedAdoption.petName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {selectedAdoption.petType} • {selectedAdoption.petBreed}
-                      </Typography>
-                      <Chip
-                        label={selectedAdoption.status}
-                        size="small"
-                        color={getStatusColor(selectedAdoption.status)}
-                        sx={{ mt: 1, fontWeight: 600 }}
-                      />
-                    </Box>
-                  </Box>
-                </Grid>
+                 <Grid item xs={12}>
+                   <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                     <img
+                       src={getImageUrl(selectedAdoption.petImage) || DEFAULT_PET_IMAGE}
+                       alt={selectedAdoption.petName}
+                       style={{
+                         width: 120,
+                         height: 120,
+                         objectFit: "cover",
+                         borderRadius: 8,
+                       }}
+                     />
+                     <Box>
+                       <Typography variant="h6" fontWeight={600}>
+                         {selectedAdoption.petName}
+                       </Typography>
+                       <Typography variant="body2" color="text.secondary">
+                         {selectedAdoption.petType} • {selectedAdoption.petBreed}
+                       </Typography>
+                       <Chip
+                         label={selectedAdoption.status}
+                         size="small"
+                         color={getStatusColor(selectedAdoption.status)}
+                         sx={{ mt: 1, fontWeight: 600 }}
+                       />
+                     </Box>
+                   </Box>
+                 </Grid>
 
                 <Grid item xs={6}>
                   <Typography variant="caption" color="text.secondary">Pet Age</Typography>
