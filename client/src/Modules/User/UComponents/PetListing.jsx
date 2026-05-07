@@ -675,7 +675,7 @@ const PetListing = () => {
                 </Box>
 
                 {/* Size Filter */}
-                <Box sx={{ mb: 4 }}>
+                {/* <Box sx={{ mb: 4 }}>
                   <Typography fontWeight={600} sx={{ color: "#475569", mb: 2 }}>
                     Size
                   </Typography>
@@ -706,10 +706,10 @@ const PetListing = () => {
                       />
                     ))}
                   </Box>
-                </Box>
+                </Box> */}
 
                 {/* Vaccination Filter */}
-                <Box sx={{ mb: 4 }}>
+                {/* <Box sx={{ mb: 4 }}>
                   <Typography fontWeight={600} sx={{ color: "#475569", mb: 2 }}>
                     Vaccination
                   </Typography>
@@ -742,10 +742,10 @@ const PetListing = () => {
                       />
                     ))}
                   </Box>
-                </Box>
+                </Box> */}
 
                 {/* Neutered/Spayed Filter */}
-                <Box sx={{ mb: 4 }}>
+                {/* <Box sx={{ mb: 4 }}>
                   <Typography fontWeight={600} sx={{ color: "#475569", mb: 2 }}>
                     Spayed/Neutered
                   </Typography>
@@ -778,7 +778,7 @@ const PetListing = () => {
                       />
                     ))}
                   </Box>
-                </Box>
+                </Box> */}
 
                 {/* Age Range */}
                 <Box sx={{ mb: 4 }}>
