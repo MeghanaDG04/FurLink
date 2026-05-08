@@ -796,24 +796,25 @@ export default function Register() {
             sx={{ mt: 1 }}
           />
 
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{
-              mt: 2,
-              py: 1.8,
-              background: "linear-gradient(135deg, #7CB9E8 0%, #A8D8EA 100%)",
-              borderRadius: 3,
-              fontWeight: 700,
-              fontSize: "1rem",
-              textTransform: "none",
-              boxShadow: "0 4px 15px rgba(124, 185, 232, 0.4)",
-            }}
-            className="register-btn"
-            disabled={loading}
-          >
-            {loading ? "Creating Account..." : "Create Account"}
-          </Button>
+<Button
+  variant="contained"
+  fullWidth
+  sx={{
+    mt: 2,
+    py: 1.8,
+    background: "linear-gradient(135deg, #7CB9E8 0%, #A8D8EA 100%)",
+    borderRadius: 3,
+    fontWeight: 700,
+    fontSize: "1rem",
+    textTransform: "none",
+    boxShadow: "0 4px 15px rgba(124, 185, 232, 0.4)",
+  }}
+  className="register-btn"
+  disabled={loading}
+  onClick={handleregister}
+>
+  {loading ? "Creating Account..." : "Create Account"}
+</Button>
 
           <Typography variant="body2" textAlign="center" sx={{ mt: 3, color: "#666" }}>
             Already have an account?{" "}

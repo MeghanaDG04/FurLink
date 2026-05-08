@@ -4,6 +4,8 @@ import Grid from '@mui/material/Grid'
 import PeopleIcon from '@mui/icons-material/People'
 import CategoryIcon from '@mui/icons-material/Category'
 import InventoryIcon from '@mui/icons-material/Inventory'
+import PetsIcon from '@mui/icons-material/Pets'
+import FavoriteIcon from '@mui/icons-material/Favorite'
 import axios from 'axios'
 
 export default function AHome() {
@@ -11,21 +13,55 @@ export default function AHome() {
   const [counts, setCounts] = useState({
     users: 0,
     categories: 0,
-    products: 0
+    products: 0,
+    pets: 0,
+    adopts: 0
   })
 
   const fetchCounts = async () => {
     try {
-
-      const users = await axios.get("http://localhost:7000/user/getusers")
-      const categories = await axios.get("http://localhost:7000/category/getCategory")
-      const products = await axios.get("http://localhost:7000/product/getproducts")
+      const token = localStorage.getItem('adminToken');
+      
+      // Fetch users
+      const usersResponse = await axios.get("http://localhost:7000/user/getusers");
+      
+      // Fetch categories
+      const categoriesResponse = await axios.get("http://localhost:7000/category/getCategory");
+      
+      // Fetch products
+      const productsResponse = await axios.get("http://localhost:7000/product/getproducts");
+      
+      // Fetch pets (requires admin token)
+      let petsCount = 0;
+      if (token) {
+        try {
+          const petsResponse = await axios.get("http://localhost:7000/pet/admin/all", {
+            headers: { 'auth-token': token }
+          });
+          petsCount = petsResponse.data.pets ? petsResponse.data.pets.length : 0;
+        } catch (petError) {
+          console.log("Error fetching pets count:", petError);
+          petsCount = 0;
+        }
+      }
+      
+      // Fetch adopts (no auth required)
+      let adoptsCount = 0;
+      try {
+        const adoptsResponse = await axios.get("http://localhost:7000/adopt/all");
+        adoptsCount = adoptsResponse.data.alladopts ? adoptsResponse.data.alladopts.length : 0;
+      } catch (adoptError) {
+        console.log("Error fetching adopts count:", adoptError);
+        adoptsCount = 0;
+      }
 
       setCounts({
-        users: users.data.alluser.length,
-        categories: categories.data.cdata.length,
-        products: products.data.pdata.length
-      })
+        users: usersResponse.data.alluser.length,
+        categories: categoriesResponse.data.cdata.length,
+        products: productsResponse.data.pdata.length,
+        pets: petsCount,
+        adopts: adoptsCount
+      });
 
     } catch (error) {
       console.log("Error fetching dashboard data", error)
@@ -36,26 +72,38 @@ export default function AHome() {
     fetchCounts()
   }, [])
 
-  const statCards = [
-    {
-      title: 'Total Users',
-      value: counts.users,
-      icon: <PeopleIcon sx={{ fontSize: 40 }} />,
-      gradient: 'linear-gradient(135deg, #1A73E8 0%, #49a3f1 100%)',
-    },
-    {
-      title: 'Total Categories',
-      value: counts.categories,
-      icon: <CategoryIcon sx={{ fontSize: 40 }} />,
-      gradient: 'linear-gradient(135deg, #43A047 0%, #66BB6A 100%)',
-    },
-    {
-      title: 'Total Products',
-      value: counts.products,
-      icon: <InventoryIcon sx={{ fontSize: 40 }} />,
-      gradient: 'linear-gradient(135deg, #FB8C00 0%, #FFA726 100%)',
-    },
-  ]
+   const statCards = [
+     {
+       title: 'Total Users',
+       value: counts.users,
+       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
+       gradient: 'linear-gradient(135deg, #1A73E8 0%, #49a3f1 100%)',
+     },
+     {
+       title: 'Total Categories',
+       value: counts.categories,
+       icon: <CategoryIcon sx={{ fontSize: 40 }} />,
+       gradient: 'linear-gradient(135deg, #43A047 0%, #66BB6A 100%)',
+     },
+     {
+       title: 'Total Products',
+       value: counts.products,
+       icon: <InventoryIcon sx={{ fontSize: 40 }} />,
+       gradient: 'linear-gradient(135deg, #FB8C00 0%, #FFA726 100%)',
+     },
+     {
+       title: 'Total Pets',
+       value: counts.pets,
+       icon: <PetsIcon sx={{ fontSize: 40 }} />,
+       gradient: 'linear-gradient(135deg, #6A1B9A 0%, #8E24AA 100%)',
+     },
+     {
+       title: 'Total Adoptions',
+       value: counts.adopts,
+       icon: <FavoriteIcon sx={{ fontSize: 40 }} />,
+       gradient: 'linear-gradient(135deg, #E91E63 0%, #F48FB1 100%)',
+     },
+   ]
 
    return (
     <Box>
