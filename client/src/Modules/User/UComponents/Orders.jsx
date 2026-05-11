@@ -79,6 +79,10 @@ export default function Orders() {
         return 'success';
       case 'Pending':
         return 'warning';
+      case 'Shipped':
+        return 'info';
+      case 'Delivered':
+        return 'success';
       case 'Cancelled':
         return 'error';
       default:
@@ -349,29 +353,41 @@ export default function Orders() {
                       </TableContainer>
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ScheduleIcon sx={{ color: '#FF9A56' }} /> Timeline
-                      </Typography>
-                      <Box sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 18 }} />
-                          <Typography variant="body2">Order placed: {formatDate(order.bookingDate)}</Typography>
-                        </Box>
-                        {order.bookingstatus === 'Confirmed' && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <LocalShippingIcon sx={{ color: '#2196f3', fontSize: 18 }} />
-                            <Typography variant="body2">Order confirmed</Typography>
-                          </Box>
-                        )}
-                        {order.bookingstatus === 'Cancelled' && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CancelIcon sx={{ color: '#f44336', fontSize: 18 }} />
-                            <Typography variant="body2">Order cancelled</Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    </Grid>
+                     <Grid item xs={12} md={6}>
+                       <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                         <ScheduleIcon sx={{ color: '#FF9A56' }} /> Timeline
+                       </Typography>
+                       <Box sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                           <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 18 }} />
+                           <Typography variant="body2">Order placed: {formatDate(order.bookingDate)}</Typography>
+                         </Box>
+                         {order.bookingstatus === 'Confirmed' && (
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                             <LocalShippingIcon sx={{ color: '#2196f3', fontSize: 18 }} />
+                             <Typography variant="body2">Order confirmed</Typography>
+                           </Box>
+                         )}
+                         {order.bookingstatus === 'Shipped' && (
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                             <LocalShippingIcon sx={{ color: '#2196f3', fontSize: 18 }} />
+                             <Typography variant="body2">Order shipped</Typography>
+                           </Box>
+                         )}
+                         {order.bookingstatus === 'Delivered' && (
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                             <LocalShippingIcon sx={{ color: '#2196f3', fontSize: 18 }} />
+                             <Typography variant="body2">Order delivered</Typography>
+                           </Box>
+                         )}
+                         {order.bookingstatus === 'Cancelled' && (
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                             <CancelIcon sx={{ color: '#f44336', fontSize: 18 }} />
+                             <Typography variant="body2">Order cancelled</Typography>
+                           </Box>
+                         )}
+                       </Box>
+                     </Grid>
                   </Grid>
 
                   <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
